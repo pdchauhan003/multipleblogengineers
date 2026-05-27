@@ -5,7 +5,7 @@ import { userRouter } from './routes/authRoute.js';
 
 const app = express();
 const allowedOrigins = [
-    'http://localhost:3001',
+    'http://localhost:3000',
 ];
 if (process.env.CLIENT_URL) {
     allowedOrigins.push(process.env.CLIENT_URL);

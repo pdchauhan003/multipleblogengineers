@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogIn, Mail, Lock } from "lucide-react";
+import { LogIn, Mail, Lock, } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -88,6 +89,16 @@ const Login = () => {
           >
             <LogIn size={18} />
             Sign In
+          </button>
+
+          {/* Button */}
+          <button
+            type="submit"
+            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] transition text-white font-medium py-3 rounded-lg shadow-lg shadow-indigo-600/20"
+          >
+            {/* <LogIn size={18} /> */}
+            <FcGoogle size={22}/>
+            Google
           </button>
         </form>
 
