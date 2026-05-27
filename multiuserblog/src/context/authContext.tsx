@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const sendMail = async (email: string) => {
     try {
-      const res = await api.post('/auth/send-mail', { email });
+      await api.post('/auth/send-mail', { email });
       return { success: true, message: 'mail sended' };
     }
     catch (error) {

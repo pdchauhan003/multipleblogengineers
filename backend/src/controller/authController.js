@@ -183,34 +183,46 @@ export const googleLogin = async (req, res) => {
 }
 
 export const forgotSendMail = async (req, res) => {
-    try{
-        const {email}=req.body;
-        const mailsend=await sendMail(email);
-        return res.status(200).json({message:'mail send success',success:true,otp:mailsend.otp})
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+        const mailsend = await sendMail(email);
+        if (!mailsend.success) {
+            return res.status(400).json({ success: false, message: mailsend.message });
+        }
+        return res.status(200).json({ success: true, message: mailsend.message, otp: mailsend.otp });
     }
-    catch(error){
-        return res.status(401).json({success:false,message:'error to send mail call in send mail'})
+    catch (error) {
+        console.error('Error in forgotSendMail:', error);
+        return res.status(500).json({ success: false, message: 'Error in sending mail' });
     }
 }
 
-export const verifyOtp=async(req,res)=>{
+export const verifyOtp = async (req, res) => {
     try {
-        const { email, otp } = await req.json();
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: "Email and OTP are required" });
+        }
+
         const user = await User.findOne({ email });
         if (!user) {
-        return res.json({ success: false, message: "User not found" });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
+
         //  Wrong OTP
         if (user.otp !== otp) {
-        return res.json({ success: false, message: "Invalid OTP" });
+            return res.status(400).json({ success: false, message: "Invalid OTP" });
         }
 
         //  Expiry check
         if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
-        return res.json({
-            success: false,
-            message: "OTP expired. Request new one ",
-        });
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired. Request new one ",
+            });
         }
 
         //  after Success reset
@@ -219,16 +231,53 @@ export const verifyOtp=async(req,res)=>{
         user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
         await user.save();
 
-        return res.json({ success: true });
+        return res.status(200).json({ success: true, message: "OTP verified successfully" });
     } 
     catch (error) {
         console.error("Error in verify-otp API:", error);
-        return res.json({
-        success: false,
-        message: "Internal server error",
-        error: error.message
-        }, { status: 500 });
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
     }
-    
 }
 
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        if (!email || !newPassword) {
+            return res.status(400).json({ success: false, message: "Email and new password are required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Check that verification was already completed and is within expiration
+        if (user.otp !== 'VERIFIED_RESET') {
+            return res.status(400).json({ success: false, message: "OTP has not been verified" });
+        }
+
+        if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+            return res.status(400).json({ success: false, message: "Verification session has expired. Please verify OTP again." });
+        }
+
+        // Set the new password - Mongoose hooks will hash it automatically on save!
+        user.password = newPassword;
+        user.otp = undefined;
+        user.otpExpiry = undefined;
+        await user.save();
+
+        return res.status(200).json({ success: true, message: "Password updated successfully" });
+    }
+    catch (error) {
+        console.error("Error in resetPassword API:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}

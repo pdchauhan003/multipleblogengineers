@@ -62,7 +62,7 @@ const Login = () => {
   };
 
   const forgotPassword = async() => {
-    router.push(`/otpforgot?${email}`);
+    router.push(`/otpforgot?email=${email}`);
   }
 
   return (
