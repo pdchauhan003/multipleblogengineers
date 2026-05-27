@@ -26,12 +26,13 @@ export interface RegisterPayload {
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  forgot:boolean;
+  forgot: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (nameOrData: string | RegisterPayload, email?: string, password?: string, role?: string) => Promise<{ success: boolean; error?: string }>;
   googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   checkUser: () => Promise<void>;
+  sendMail: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -69,11 +70,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setForgot(true);
         return { success: false, error: 'forgot' };
       }
-        
+
       setUser(res.data.user);
       router.push('/dashboard');
       return { success: true };
-      
+
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Login failed';
       if (err.response?.status === 401) {
@@ -134,10 +135,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const sendMail = async (email: string) => {
+    try {
+      const res = await api.post('/auth/send-mail', { email });
+      return { success: true, message: 'mail sended' };
+    }
+    catch (error) {
+      console.error('Forgot password failed:', error);
+      return { success: false, error: 'mail sending error' };
+    }
+  }
+
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'dummy-client-id.apps.googleusercontent.com';
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, checkUser ,forgot}}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, checkUser, forgot, sendMail }}>
       <GoogleOAuthProvider clientId={googleClientId}>
         {children}
       </GoogleOAuthProvider>

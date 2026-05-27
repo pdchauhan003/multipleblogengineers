@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { User } from "../models/User.js";
 import { accessToken, refreshToken } from "../utils/token.js";
+import { sendMail } from "../services/mailService.js";
 
 const getCookieOptions = (req, maxAge) => {
     const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
@@ -35,11 +36,11 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(401).json({ success: false, message: 'invalid email',forgot:false });
+            return res.status(401).json({ success: false, message: 'invalid email', forgot: false });
         }
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'invalid password',forgot:true });
+            return res.status(401).json({ success: false, message: 'invalid password', forgot: true });
         }
 
         const accesstoken = accessToken({ id: user._id });
@@ -56,7 +57,7 @@ export const login = async (req, res) => {
         return res.json({
             success: true,
             message: 'login success',
-            forgot:false,
+            forgot: false,
             user: {
                 _id: user._id,
                 name: user.name,
@@ -66,7 +67,7 @@ export const login = async (req, res) => {
     }
     catch (error) {
         console.log('login failed', error);
-        return res.status(500).json({ success: false, message: 'error in login',forgot:false });
+        return res.status(500).json({ success: false, message: 'error in login', forgot: false });
     }
 }
 
@@ -180,3 +181,54 @@ export const googleLogin = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Internal server error during Google login' });
     }
 }
+
+export const forgotSendMail = async (req, res) => {
+    try{
+        const {email}=req.body;
+        const mailsend=await sendMail(email);
+        return res.status(200).json({message:'mail send success',success:true,otp:mailsend.otp})
+    }
+    catch(error){
+        return res.status(401).json({success:false,message:'error to send mail call in send mail'})
+    }
+}
+
+export const verifyOtp=async(req,res)=>{
+    try {
+        const { email, otp } = await req.json();
+        const user = await User.findOne({ email });
+        if (!user) {
+        return res.json({ success: false, message: "User not found" });
+        }
+        //  Wrong OTP
+        if (user.otp !== otp) {
+        return res.json({ success: false, message: "Invalid OTP" });
+        }
+
+        //  Expiry check
+        if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+        return res.json({
+            success: false,
+            message: "OTP expired. Request new one ",
+        });
+        }
+
+        //  after Success reset
+        user.otp = 'VERIFIED_RESET';
+        // keep expiry for a short window (e.g. 10 more minutes)
+        user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
+        await user.save();
+
+        return res.json({ success: true });
+    } 
+    catch (error) {
+        console.error("Error in verify-otp API:", error);
+        return res.json({
+        success: false,
+        message: "Internal server error",
+        error: error.message
+        }, { status: 500 });
+    }
+    
+}
+

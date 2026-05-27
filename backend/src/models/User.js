@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['visitor', 'creator'], default: 'visitor' },
     createdAt:{type:Date,default:Date.now},
+    otp:{type:String},
+    otpExpiry: { type: Date },
+    otpRequestCount: { type: Number, default: 0 },
+    otpLastRequest: { type: Date },
     refreshToken: { type: String } // Store refresh token for rotation/revocation
 }, { timestamps: true });
 

@@ -9,6 +9,7 @@ import { LogIn, Mail, Lock, } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
 
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,6 +61,10 @@ const Login = () => {
     }
   };
 
+  const forgotPassword = async() => {
+    router.push(`/otpforgot?${email}`);
+  }
+
   return (
     <div suppressHydrationWarning className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 px-4">
       {/* Card */}
@@ -107,28 +112,27 @@ const Login = () => {
               <input
                 type="password"
                 placeholder="Password"
-                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                  forgot
-                    ? "border-red-500/60 focus:ring-red-500"
-                    : "border-white/10 focus:ring-indigo-500"
-                }`}
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition ${forgot
+                  ? "border-red-500/60 focus:ring-red-500"
+                  : "border-white/10 focus:ring-indigo-500"
+                  }`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
+
             {/* Forgot password — shown only after a wrong password attempt */}
             <div
-              className={`overflow-hidden transition-all duration-300 ${
-                forgot ? "max-h-10 opacity-100 mt-2 text-right" : "max-h-0 opacity-0"
-              }`}
+              className={`overflow-hidden transition-all duration-300 ${forgot ? "max-h-10 opacity-100 mt-2 text-right" : "max-h-0 opacity-0"
+                }`}
             >
-              <Link
-                href="/otpforgot"
-                className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors font-medium"
+              <button
+                onClick={forgotPassword}
+                className="text-sm text-purple-600 mt-3 hover:underline"
               >
-                Forgot your password? Reset it here →
-              </Link>
+                Forgot Password?
+              </button>
             </div>
           </div>
 
@@ -148,7 +152,7 @@ const Login = () => {
             className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 active:scale-[0.99] border border-white/10 transition text-white font-medium py-3 rounded-lg shadow-lg shadow-black/10"
           >
             {/* <LogIn size={18} /> */}
-            <FcGoogle size={22}/>
+            <FcGoogle size={22} />
             Google
           </button>
         </form>
