@@ -13,10 +13,9 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, googleLogin } = useAuth();
+  const { login, googleLogin, forgot } = useAuth();
   const router = useRouter();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleGoogleSuccess = async (tokenResponse: any) => {
     setError("");
     try {
@@ -56,7 +55,6 @@ const Login = () => {
       } else {
         setError(res.error || "Login failed");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Login failed");
     }
@@ -100,19 +98,38 @@ const Login = () => {
           </div>
 
           {/* Password */}
-          <div className="relative">
-            <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div>
+            <div className="relative">
+              <Lock
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                  forgot
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : "border-white/10 focus:ring-indigo-500"
+                }`}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {/* Forgot password — shown only after a wrong password attempt */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                forgot ? "max-h-10 opacity-100 mt-2 text-right" : "max-h-0 opacity-0"
+              }`}
+            >
+              <Link
+                href="/otpforgot"
+                className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors font-medium"
+              >
+                Forgot your password? Reset it here →
+              </Link>
+            </div>
           </div>
 
           {/* Button */}

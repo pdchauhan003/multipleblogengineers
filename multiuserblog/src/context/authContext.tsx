@@ -26,6 +26,7 @@ export interface RegisterPayload {
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
+  forgot:boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (nameOrData: string | RegisterPayload, email?: string, password?: string, role?: string) => Promise<{ success: boolean; error?: string }>;
   googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
@@ -38,6 +39,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [forgot, setForgot] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkUser = async () => {
     try {
+      setForgot(false);
       // The Axios interceptor automatically handles 401 token refresh and retries seamlessly!
       const res = await api.get('/auth/me');
       setUser(res.data.user);
@@ -59,12 +62,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      setForgot(false);
       const res = await api.post('/auth/login', { email, password });
+
+      if (res.data.forgot) {
+        setForgot(true);
+        return { success: false, error: 'forgot' };
+      }
+        
       setUser(res.data.user);
       router.push('/dashboard');
       return { success: true };
+      
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.message || 'Login failed';
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Login failed';
+      if (err.response?.status === 401) {
+        setForgot(true);
+      }
       return { success: false, error: errorMsg };
     }
   };
@@ -88,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.push('/dashboard');
       return { success: true };
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.message || 'Registration failed';
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Registration failed';
       return { success: false, error: errorMsg };
     }
   };
@@ -123,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'dummy-client-id.apps.googleusercontent.com';
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, checkUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, checkUser ,forgot}}>
       <GoogleOAuthProvider clientId={googleClientId}>
         {children}
       </GoogleOAuthProvider>

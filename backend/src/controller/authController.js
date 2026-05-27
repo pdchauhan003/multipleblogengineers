@@ -35,11 +35,11 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(401).json({ success: false, message: 'invalid email or password' });
+            return res.status(401).json({ success: false, message: 'invalid email',forgot:false });
         }
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'invalid email or password' });
+            return res.status(401).json({ success: false, message: 'invalid password',forgot:true });
         }
 
         const accesstoken = accessToken({ id: user._id });
@@ -56,6 +56,7 @@ export const login = async (req, res) => {
         return res.json({
             success: true,
             message: 'login success',
+            forgot:false,
             user: {
                 _id: user._id,
                 name: user.name,
@@ -65,7 +66,7 @@ export const login = async (req, res) => {
     }
     catch (error) {
         console.log('login failed', error);
-        return res.status(500).json({ success: false, message: 'error in login' });
+        return res.status(500).json({ success: false, message: 'error in login',forgot:false });
     }
 }
 
