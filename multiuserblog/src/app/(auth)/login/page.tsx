@@ -128,6 +128,7 @@ const Login = () => {
                 }`}
             >
               <button
+                type="button"
                 onClick={forgotPassword}
                 className="text-sm text-purple-600 mt-3 hover:underline"
               >
