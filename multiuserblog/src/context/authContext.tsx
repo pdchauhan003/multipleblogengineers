@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/immutability */
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/api/axios';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export interface User {
   _id: string;
@@ -26,6 +28,7 @@ export interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (nameOrData: string | RegisterPayload, email?: string, password?: string, role?: string) => Promise<{ success: boolean; error?: string }>;
+  googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   checkUser: () => Promise<void>;
 }
@@ -90,6 +93,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const googleLogin = async (token: string) => {
+    try {
+      const res = await api.post('/auth/google', { token });
+      setUser(res.data.user);
+      router.push('/dashboard');
+      return { success: true };
+    } catch (err: any) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Google Sign-In failed';
+      return { success: false, error: errorMsg };
+    }
+  };
+
   const logout = async () => {
     try {
       await api.delete('/auth/logout');
@@ -101,9 +120,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'dummy-client-id.apps.googleusercontent.com';
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, checkUser }}>
-      {children}
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout, checkUser }}>
+      <GoogleOAuthProvider clientId={googleClientId}>
+        {children}
+      </GoogleOAuthProvider>
     </AuthContext.Provider>
   );
 };

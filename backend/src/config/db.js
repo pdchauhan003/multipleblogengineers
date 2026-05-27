@@ -2,7 +2,7 @@ import mg from 'mongoose';
 
 export const connectDB = async () => {
     if (!process.env.MONGO_URI) {
-        console.error('CRITICAL ERROR: MONGO_URI environment variable is missing or undefined.');
+        console.error('error MONGO_URI environment variable is missing or undefined.');
         process.exit(1);
     }
     try {

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { User } from "../models/User.js";
 import { accessToken, refreshToken } from "../utils/token.js";
 
@@ -117,5 +118,64 @@ export const logout = async (req, res) => {
     catch (error) {
         console.log('error in logout', error);
         return res.status(500).json({ success: false, message: 'error in logout' });
+    }
+}
+
+export const googleLogin = async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'Google access token is required' });
+        }
+
+        // Verify the Google token by fetching user profile from Google info endpoint
+        const googleResponse = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
+        if (!googleResponse.ok) {
+            return res.status(400).json({ success: false, message: 'Failed to verify Google access token' });
+        }
+
+        const googleUser = await googleResponse.json();
+        const { email, name } = googleUser;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Google account does not contain a valid email' });
+        }
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // User does not exist, auto-register them
+            const randomPassword = crypto.randomBytes(16).toString('hex');
+            user = await User.create({
+                name: name || email.split('@')[0],
+                email,
+                password: randomPassword,
+                role: 'visitor' // Default role for new users
+            });
+        }
+
+        // Log the user in by generating session tokens
+        const accesstoken = accessToken({ id: user._id });
+        const refreshtoken = refreshToken({ id: user._id });
+
+        user.refreshToken = refreshtoken;
+        await user.save();
+
+        res.cookie('accessToken', accesstoken, getCookieOptions(req, 15 * 60 * 1000));
+        res.cookie('refreshToken', refreshtoken, getCookieOptions(req, 7 * 24 * 60 * 60 * 1000));
+
+        return res.json({
+            success: true,
+            message: 'login success',
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        });
+    }
+    catch (error) {
+        console.error('Error during Google login:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error during Google login' });
     }
 }

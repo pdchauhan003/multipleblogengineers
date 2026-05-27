@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from "react";
@@ -6,13 +7,44 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogIn, Mail, Lock, } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const router = useRouter();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleGoogleSuccess = async (tokenResponse: any) => {
+    setError("");
+    try {
+      const res = await googleLogin(tokenResponse.access_token);
+      if (!res.success) {
+        setError(res.error || "Google Sign-In failed");
+      }
+    } catch (err: any) {
+      setError(err.message || "Google Sign-In failed");
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google Sign-In failed. Please try again.");
+  };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+  });
+
+  const handleGoogleClick = () => {
+    if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+      setError("Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file to enable Google Sign-In.");
+      return;
+    }
+    loginWithGoogle();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,13 +56,14 @@ const Login = () => {
       } else {
         setError(res.error || "Login failed");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Login failed");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 px-4">
+    <div suppressHydrationWarning className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 px-4">
       {/* Card */}
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
         {/* Header */}
@@ -93,8 +126,9 @@ const Login = () => {
 
           {/* Button */}
           <button
-            type="submit"
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] transition text-white font-medium py-3 rounded-lg shadow-lg shadow-indigo-600/20"
+            type="button"
+            onClick={handleGoogleClick}
+            className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 active:scale-[0.99] border border-white/10 transition text-white font-medium py-3 rounded-lg shadow-lg shadow-black/10"
           >
             {/* <LogIn size={18} /> */}
             <FcGoogle size={22}/>
