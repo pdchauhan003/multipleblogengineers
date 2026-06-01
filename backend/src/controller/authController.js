@@ -61,7 +61,8 @@ export const login = async (req, res) => {
             user: {
                 _id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
     }
@@ -98,6 +99,7 @@ export const getUserProfile = async (req, res) => {
             _id: req.user._id,
             name: req.user.name,
             email: req.user.email,
+            role: req.user.role,
         }
         return res.json({ success: true, user });
     }
@@ -172,7 +174,8 @@ export const googleLogin = async (req, res) => {
             user: {
                 _id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
     }

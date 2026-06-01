@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { userRouter } from './routes/authRoute.js';
+import { blogRouter } from './routes/blogRoute.js';
 
 const app = express();
 const allowedOrigins = [
@@ -28,5 +29,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/api/auth', userRouter);
+app.use('/api/blog',blogRouter);
 
 export { app };
