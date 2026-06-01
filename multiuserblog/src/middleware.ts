@@ -38,13 +38,10 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths EXCEPT:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico
-     * - api routes (handled by Express via proxy)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    // '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/login',
+    '/register',
   ],
 };
