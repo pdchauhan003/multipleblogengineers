@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useAuth } from "@/context/authContext";
@@ -10,25 +9,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import BlogCardSkeleton from "@/components/BlogCardSkelaton";
 import BlogCard from "@/components/BlogCard";
 
-interface Blog {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  coverImage?: string;
-  status: 'draft' | 'published';
-  createdAt: string;
-  authorId?: {
-    name: string;
-    email: string;
-  };
-}
-
 
 
 export default function Dashboard() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   // Intersection observer sentinel ref
