@@ -1,6 +1,7 @@
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
 import NavbarWrapp from "@/components/NavbarWrapp";
+import Provider from "@/components/provider/reactProvider";
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // const {user}=useAuth();
@@ -8,8 +9,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <AuthProvider>
-          <NavbarWrapp/>
-          {children}
+          <Provider>
+            <NavbarWrapp/>
+            {children}
+          </Provider>
         </AuthProvider>
       </body>
     </html>

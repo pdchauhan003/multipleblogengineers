@@ -1,4 +1,5 @@
 import { Blog } from "../models/Blog.js";
+import { User } from "../models/User.js";
 
 export const createBlog = async (req, res) => {
   try {
@@ -78,3 +79,47 @@ export const getBlogs = async (req, res) => {
   }
 };
 
+
+export const getIndividualBlog=async(req,res)=>{
+    try {
+    const limit = parseInt(req.query.limit) || 10;
+    const username=req.params.username;
+    const cursor = req.query.cursor; // ISO date string of the last fetched blog's createdAt
+
+    const user=await User.findOne({name:username}).select('-password').lean();
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const query = { status: 'published' };
+    if (cursor) {
+      query.createdAt = { $lt: new Date(cursor) };
+    }
+
+    // Fetch limit + 1 to determine if there are more pages without an extra count query
+    const blogs = await Blog.find({authorId:user._id,...query})
+      .sort({ createdAt: -1 })
+      .limit(limit + 1)
+      .populate('authorId', 'name email')
+      .lean();
+
+    const hasMore = blogs.length > limit;
+    if (hasMore) blogs.pop(); // Remove the extra item
+
+    // The next cursor is the createdAt of the last item in the returned list
+    const nextCursor = hasMore ? blogs[blogs.length - 1].createdAt.toISOString() : null;
+
+    return res.status(200).json({
+      success: true,
+      blogs,
+      nextCursor,
+      hasMore,
+    });
+  } catch (error) {
+    console.error('Error in getBlogs:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+}
