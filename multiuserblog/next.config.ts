@@ -9,10 +9,19 @@
 
 
 import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:2321";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
+  },
   reactCompiler: true,
   async rewrites() {
     return [

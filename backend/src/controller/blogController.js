@@ -3,7 +3,8 @@ import { Blog } from "../models/Blog.js";
 export const createBlog = async (req, res) => {
   try {
     const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status,} = req.body;
-    if (!title ||!htmlContent ||!category ||!excerpt)  //checks required fields
+    // if (!title ||!htmlContent ||!category ||!excerpt)  //checks required fields
+    if (!title ||!category ) 
     {
       return res.status(400).json({
         success: false,
@@ -11,9 +12,9 @@ export const createBlog = async (req, res) => {
       });
     }
 
-    const slug = title.toLowerCase().trim().replace(/\s+/g, "-"); //create slug using totle and replace space with - and uppercase with lowercase
+    const slug = title.toLowerCase().trim().replace(/\s+/g, "-"); //create slug using title and replace space with - and uppercase with lowercase
 
-    const existingBlog = await Blog.findOne({ slug });  //check blog is exit or not
+    const existingBlog = await Blog.findOne({ slug });  //check blog exists or not
 
     if (existingBlog) {
       return res.status(409).json({
@@ -22,7 +23,7 @@ export const createBlog = async (req, res) => {
       });
     }
 
-    const blog = await Blog.create({title,slug,htmlContent,category,coverImage,excerpt,seoKeywords,status,authorId: req.user?.id,}); // if auth middleware exists
+    const blog = await Blog.create({title,slug,htmlContent,category,coverImage,excerpt,seoKeywords,status,authorId: req.user?._id,});
     return res.status(201).json({
       success: true,
       message: "Blog created successfully",
@@ -30,10 +31,49 @@ export const createBlog = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+// Cursor-based pagination — fetches latest blogs sorted by createdAt descending
+export const getBlogs = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const cursor = req.query.cursor; // ISO date string of the last fetched blog's createdAt
+
+    // Build the query — if cursor exists, fetch blogs older than the cursor date
+    const query = { status: 'published' };
+    if (cursor) {
+      query.createdAt = { $lt: new Date(cursor) };
+    }
+
+    // Fetch limit + 1 to determine if there are more pages without an extra count query
+    const blogs = await Blog.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit + 1)
+      .populate('authorId', 'name email')
+      .lean();
+
+    const hasMore = blogs.length > limit;
+    if (hasMore) blogs.pop(); // Remove the extra item
+
+    // The next cursor is the createdAt of the last item in the returned list
+    const nextCursor = hasMore ? blogs[blogs.length - 1].createdAt.toISOString() : null;
+
+    return res.status(200).json({
+      success: true,
+      blogs,
+      nextCursor,
+      hasMore,
+    });
+  } catch (error) {
+    console.error('Error in getBlogs:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
     });
   }
 };
