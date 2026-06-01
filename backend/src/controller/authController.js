@@ -21,6 +21,16 @@ export const register = async (req, res) => {
     try {
         console.log('Register request body:', req.body);
         const { name, email, password } = req.body;
+        const [checkName,checkEmail]=await Promise.all([
+            User.findOne({name}).lean(),
+            User.findOne({email}).lean()
+        ])
+        if(checkName){
+            return res.status(201).json({success:false,message:'name already exists'})
+        }
+        if(checkEmail){
+            return res.status(201).json({success:false,message:'email already exists'})
+        }
         const newUser = await User.create({ name, email, password });
         console.log('New User created:', newUser);
         return res.status(201).json({ success: true, message: 'user register success' });
