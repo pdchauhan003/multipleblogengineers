@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef,} from "react";
+import { useEffect, useRef, } from "react";
 import { LayoutDashboard, PenSquare, } from "lucide-react";
 import api from "@/api/axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -33,7 +33,7 @@ export default function Feed() {
     initialPageParam: null as string | null,
 
     queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({limit: '10'});
+      const params = new URLSearchParams({ limit: '10' });
       if (pageParam) {
         params.set('cursor', pageParam);
       }
@@ -47,31 +47,31 @@ export default function Feed() {
         : undefined;
     },
   });
-  const blogs =data?.pages.flatMap((page) => page.blogs) ?? [];
+  const blogs = data?.pages.flatMap((page) => page.blogs) ?? [];
 
 
   // Intersection Observer for infinite scroll
-useEffect(() => {
-  if (!sentinelRef.current) return;
+  useEffect(() => {
+    if (!sentinelRef.current) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (
-        entries[0].isIntersecting &&
-        hasNextPage &&
-        !isFetchingNextPage
-      ) {
-        fetchNextPage();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
       }
-    },
-    {
-      threshold: 0.1,
-    }
-  );
+    );
 
-  observer.observe(sentinelRef.current);
+    observer.observe(sentinelRef.current);
 
-  return () => observer.disconnect();
+    return () => observer.disconnect();
   }, [
     fetchNextPage,
     hasNextPage,
@@ -89,7 +89,7 @@ useEffect(() => {
       </div>
     );
   }
-
+  console.log('blod data is blogs:',blogs)
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       <div className="max-w-6xl mx-auto px-4 py-8 md:px-8">

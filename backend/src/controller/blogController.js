@@ -80,6 +80,25 @@ export const getBlogs = async (req, res) => {
 };
 
 
+// Fetch a single blog by slug (for the blog detail page)
+export const getBlogBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const blog = await Blog.findOne({ slug, status: 'published' })
+      .populate('authorId', 'name email')
+      .lean();
+
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    return res.status(200).json({ success: true, blog });
+  } catch (error) {
+    console.error('Error in getBlogBySlug:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 export const getIndividualBlog=async(req,res)=>{
     try {
     const limit = parseInt(req.query.limit) || 10;
