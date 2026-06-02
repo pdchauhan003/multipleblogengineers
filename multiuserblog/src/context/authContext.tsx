@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setUser(res.data.user);
-      router.push('/dashboard');
+      router.push('/blog');
       return { success: true };
 
     } catch (err: any) {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const res = await api.post('/auth/register', payload);
       setUser(res.data.user);
-      router.push('/dashboard');
+      router.push('/blog');
       return { success: true };
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Registration failed';
@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await api.post('/auth/google', { token });
       setUser(res.data.user);
-      router.push('/dashboard');
+      router.push('/blog');
       return { success: true };
     } catch (err: any) {
       const errorMsg =
