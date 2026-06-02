@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios';
 
 interface Blog {
@@ -49,5 +49,20 @@ export const useMyBlogs = (username: string) => {
       lastPage.hasMore
         ? lastPage.nextCursor
         : undefined,
+  });
+};
+
+export const useDeleteBlog = (username: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (blogId: string) => {
+      const res = await api.delete(`/blog/${blogId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profileBlogs', username] });
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
+    },
   });
 };

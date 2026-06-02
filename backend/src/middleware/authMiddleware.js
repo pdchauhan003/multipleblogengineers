@@ -25,6 +25,6 @@ export const creatorOnly=async(req,res,next)=>{
         next();
     } else {
         console.log('Not authorized as an admin')
-        res.status(403).json({ message: 'Not authorized as an admin' });
+        res.status(403).json({ message: 'Not authorized admin only handle this api' });
     }
 }

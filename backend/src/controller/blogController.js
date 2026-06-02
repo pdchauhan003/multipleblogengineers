@@ -12,7 +12,11 @@ export const createBlog = async (req, res) => {
         message: "Required fields are missing",
       });
     }
+    const fetchTitle=await Blog.findOne({title}).select('title').lean();
 
+    if(fetchTitle){
+      return res.status(501).json({success:false,message:'this title is exists plz use difference title'})
+    }
     const slug = title.toLowerCase().trim().replace(/\s+/g, "-"); //create slug using title and replace space with - and uppercase with lowercase
 
     const existingBlog = await Blog.findOne({ slug });  //check blog exists or not
@@ -140,5 +144,25 @@ export const getIndividualBlog=async(req,res)=>{
       success: false,
       message: 'Internal server error',
     });
+  }
+}
+
+export const deleteBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    if (blog.authorId.toString() !== req.user?._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to delete this blog' });
+    }
+
+    await Blog.findByIdAndDelete(id);
+    return res.status(200).json({ success: true, message: 'delete blog success' });
+  } catch (error) {
+    console.error('error in delete blog:', error);
+    return res.status(500).json({ success: false, message: 'error in delete blog from server' });
   }
 }

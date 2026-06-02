@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/authContext';
-import { useMyBlogs } from '@/hooks/useBlog';
+import { useMyBlogs, useDeleteBlog } from '@/hooks/useBlog';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -14,9 +14,22 @@ export default function Dashboard() {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const {data,isLoading,hasNextPage,fetchNextPage,isFetchingNextPage} = useMyBlogs(user?.name || '');
+  const deleteBlogMutation = useDeleteBlog(user?.name || '');
 
   const blogs =
     data?.pages.flatMap((page) => page.blogs) ?? [];
+
+  const handleDelete = async (blogId: string) => {
+    if (window.confirm('Are you sure you want to delete this blog?')) {
+      try {
+        await deleteBlogMutation.mutateAsync(blogId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.error('Error deleting blog:', error);
+        alert(error?.response?.data?.message || 'Failed to delete blog. Please try again.');
+      }
+    }
+  };
 
   useEffect(() => {
     if (!loading) {
@@ -31,21 +44,15 @@ export default function Dashboard() {
   useEffect(() => {
     if (!sentinelRef.current) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          !isFetchingNextPage
-        ) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if ( entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    { threshold: 0.1 }
     );
-
     observer.observe(sentinelRef.current);
-
     return () => observer.disconnect();
   }, [hasNextPage,isFetchingNextPage,fetchNextPage,]);
 
@@ -65,11 +72,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold">
             My Blogs
           </h1>
-
-          <button
-            onClick={() => router.push('/dashboard/create')}
-            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
-          >
+          <button onClick={() => router.push('/dashboard/create')} className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition">
             Create Blog
           </button>
         </div>
@@ -82,16 +85,10 @@ export default function Dashboard() {
           <>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {blogs.map((blog) => (
-                <div
-                  key={blog._id}
-                  className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
-                >
+                <div key={blog._id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
                   <div className="relative h-52">
                     <Image
-                      src={
-                        blog.coverImage ||
-                        '/placeholder-blog.jpg'
-                      }
+                      src={blog.coverImage ||'/placeholder-blog.jpg'}
                       alt={blog.title}
                       fill
                       className="object-cover"
@@ -104,29 +101,18 @@ export default function Dashboard() {
                     </h2>
 
                     <div className="flex gap-3 mt-4">
-                      <button
-                        onClick={() =>
-                          router.push(
-                            `/dashboard/edit/${blog._id}`
-                          )
-                        }
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
-                      >
+                      <button onClick={() =>router.push(`/dashboard/edit/${blog._id}`)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition">
                         <Pencil size={16} />
                         Update
                       </button>
 
                       <button
-                        onClick={() => {
-                          console.log(
-                            'Delete:',
-                            blog._id
-                          );
-                        }}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition"
+                        onClick={() => handleDelete(blog._id)}
+                        disabled={deleteBlogMutation.isPending}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 transition"
                       >
                         <Trash2 size={16} />
-                        Delete
+                        {deleteBlogMutation.isPending ? 'Deleting...' : 'Delete'}
                       </button>
                     </div>
                   </div>
@@ -141,10 +127,7 @@ export default function Dashboard() {
             )}
 
             {hasNextPage && (
-              <div
-                ref={sentinelRef}
-                className="h-10"
-              />
+              <div ref={sentinelRef} className="h-10"/>
             )}
 
             {!hasNextPage && blogs.length > 0 && (
