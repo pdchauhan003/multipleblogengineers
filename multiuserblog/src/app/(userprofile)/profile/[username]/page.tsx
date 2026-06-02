@@ -1,8 +1,9 @@
 'use client';
 
 import { useAuth } from "@/context/authContext";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import api from "@/api/axios";
+// import { useInfiniteQuery } from "@tanstack/react-query";
+// import api from "@/api/axios";
+import { useMyBlogs } from "@/hooks/useBlog";
 import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { User as UserIcon, Calendar, Mail, Shield, BookOpen, ChevronLeft } from "lucide-react";
@@ -45,27 +46,7 @@ export default function ProfilePage() {
     }
   }, [currentUser, authLoading, router]);
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-  } = useInfiniteQuery<FetchBlogsResponse>({
-    queryKey: ['profileBlogs', username],
-    initialPageParam: null as string | null,
-    queryFn: async ({ pageParam }) => {
-      const queryParams = new URLSearchParams({ limit: '10' });
-      if (pageParam) {
-        queryParams.set('cursor', pageParam as string);
-      }
-      const res = await api.get(`/blog/profile/${username}?${queryParams.toString()}`);
-      return res.data;
-    },
-    getNextPageParam: (lastPage) => {
-      return lastPage.hasMore ? lastPage.nextCursor : undefined;
-    },
-  });
+  const {data,isLoading,isFetchingNextPage,fetchNextPage,hasNextPage} = useMyBlogs(username);
 
   const blogs = data?.pages.flatMap((page) => page.blogs) ?? [];
 
