@@ -9,7 +9,7 @@ import { useMyBlogs } from '@/hooks/useBlog';
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user,loading } = useAuth();
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -17,6 +17,16 @@ export default function Dashboard() {
 
   const blogs =
     data?.pages.flatMap((page) => page.blogs) ?? [];
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else if (user.role !== 'creator') {
+        router.push('/');
+      }
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
@@ -37,11 +47,7 @@ export default function Dashboard() {
     observer.observe(sentinelRef.current);
 
     return () => observer.disconnect();
-  }, [
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  ]);
+  }, [hasNextPage,isFetchingNextPage,fetchNextPage,]);
 
   if (isLoading) {
     return (

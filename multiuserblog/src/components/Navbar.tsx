@@ -8,8 +8,10 @@ export default function Navbar() {
 
   return (
     <nav className="flex gap-5 bg-black text-white p-4 sticky top-0">
-      <Link href="/">Home</Link>
-      <Link href="/dashboard">Dashboard</Link>
+      <Link href="/blog">Home</Link>
+      {
+        user?.role == 'creator' && <Link href="/dashboard">Dashboard</Link>
+      }
       <Link href={`/profile/${user?.name}`}>Profile</Link>
       <button onClick={logout}>
         Logout

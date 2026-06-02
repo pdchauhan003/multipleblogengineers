@@ -6,6 +6,6 @@ const blogRouter = express.Router();
 
 blogRouter.post('/create', protect, creatorOnly, createBlog);
 blogRouter.get('/', protect, getBlogs);
-blogRouter.get('/profile/:username',protect,getIndividualBlog)
+blogRouter.get('/profile/:username',protect,creatorOnly,getIndividualBlog)
 
 export { blogRouter };
