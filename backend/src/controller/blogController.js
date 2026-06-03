@@ -1,9 +1,10 @@
 import { Blog } from "../models/Blog.js";
 import { User } from "../models/User.js";
+import { cloudinary } from "../config/cloudinary.js";
 
 export const createBlog = async (req, res) => {
   try {
-    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status} = req.body;
+    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status} = req.body || {};
     // if (!title ||!htmlContent ||!category ||!excerpt)  //checks required fields
     if (!title ||!category ) 
     {
@@ -27,8 +28,16 @@ export const createBlog = async (req, res) => {
         message: "Blog already exists",
       });
     }
+    let finalCoverImage = coverImage || '';
+    if (req.file) {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      const result = await cloudinary.uploader.upload(base64Image, {
+        folder: 'dev_blog_covers',
+      });
+      finalCoverImage = result.secure_url;
+    }
 
-    const blog = await Blog.create({title,slug,htmlContent,category,coverImage,excerpt,seoKeywords,status,authorId: req.user?._id,});
+    const blog = await Blog.create({title,slug,htmlContent,category,coverImage:finalCoverImage,excerpt,seoKeywords,status,authorId: req.user?._id,});
     return res.status(200).json({
       success: true,
       message: "Blog created successfully",

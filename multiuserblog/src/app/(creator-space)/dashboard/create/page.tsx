@@ -51,6 +51,7 @@ export default function CreateBlogPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -79,7 +80,19 @@ export default function CreateBlogPage() {
     setSubmitting(true);
 
     try {
-      const res = await api.post('/blog/create', state);
+      // const res = await api.post('/blog/create', state);
+      const formData = new FormData();
+      formData.append('title', state.title);
+      formData.append('htmlContent', state.htmlContent);
+      formData.append('category', state.category);
+      formData.append('excerpt', state.excerpt);
+      formData.append('seoKeywords', state.seoKeywords);
+      formData.append('status', state.status);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      const res = await api.post('/blog/create', formData);
       if (res.data.success) {
         setSuccess('Blog created successfully! 🎉');
         dispatch({ type: 'RESET' });
@@ -215,7 +228,7 @@ export default function CreateBlogPage() {
             </div>
 
             {/* Cover Image URL */}
-            <div>
+            {/* <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                 Cover Image URL
               </label>
@@ -225,6 +238,22 @@ export default function CreateBlogPage() {
                 placeholder="https://example.com/image.jpg"
                 value={state.coverImage}
                 onChange={handleChange}
+                className={inputClass}
+              />
+            </div> */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                Cover Image
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    setImageFile(e.target.files[0]);
+                  }
+                }}
                 className={inputClass}
               />
             </div>
