@@ -101,7 +101,7 @@ export default function Feed() {
               <LayoutDashboard size={24} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Feed</h1>
               <p className="text-gray-400 text-sm mt-0.5">Browse the latest engineering blogs</p>
             </div>
           </div>
