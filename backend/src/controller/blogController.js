@@ -3,7 +3,7 @@ import { User } from "../models/User.js";
 
 export const createBlog = async (req, res) => {
   try {
-    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status,} = req.body;
+    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status} = req.body;
     // if (!title ||!htmlContent ||!category ||!excerpt)  //checks required fields
     if (!title ||!category ) 
     {
@@ -29,7 +29,7 @@ export const createBlog = async (req, res) => {
     }
 
     const blog = await Blog.create({title,slug,htmlContent,category,coverImage,excerpt,seoKeywords,status,authorId: req.user?._id,});
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "Blog created successfully",
       blog,
@@ -164,5 +164,46 @@ export const deleteBlog = async (req, res) => {
   } catch (error) {
     console.error('error in delete blog:', error);
     return res.status(500).json({ success: false, message: 'error in delete blog from server' });
+  }
+}
+
+export const updateBlog=async(req,res)=>{
+  try{
+    const {id}=req.params;
+    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status}=req.body;
+
+    const checkBlog=await Blog.findById(id);
+    if(!checkBlog){
+      return res.status(404).json({success:false,message:'blog not fount'})
+    }
+    if (!title ||!category ) 
+    {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields are missing",
+      });
+    }
+    const fetchTitle=await Blog.findOne({title, _id:{ $ne: id }}).select('title').lean(); //because that throus error because that is find this blog 
+
+    if(fetchTitle){
+      return res.status(404).json({success:false,message:'this title is exists plz use difference title'})
+    }
+    const slug = title.toLowerCase().trim().replace(/\s+/g, "-"); //create slug using title and replace space with - and uppercase with lowercase
+
+    const existingBlog = await Blog.findOne({ slug , _id: { $ne: id }});  //check slug exits in other ids not current blog id
+    if (existingBlog) {
+      return res.status(409).json({
+        success: false,
+        message: "Blog already exists",
+      });
+    }
+
+    const blog=await Blog.findByIdAndUpdate(id,{title,slug,htmlContent,category,coverImage,excerpt,seoKeywords,status},{ new: true })
+    return res.status(200).json({success: true,message: "Blog created successfully",blog,});
+
+  }
+  catch(error){
+    console.log('server error to update blog');
+    return res.status(501).json({success:false,message:'server error to update blog'})
   }
 }

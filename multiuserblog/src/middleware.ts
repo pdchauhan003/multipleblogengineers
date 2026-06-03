@@ -30,7 +30,7 @@ export function middleware(request: NextRequest) {
 
   // Case B: Already logged in → trying to access /login or /register → redirect to /dashboard
   if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL('/blog', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

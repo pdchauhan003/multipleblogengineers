@@ -92,6 +92,7 @@ export default function Dashboard() {
                       alt={blog.title}
                       fill
                       className="object-cover"
+                      loading="eager"
                     />
                   </div>
 

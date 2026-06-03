@@ -116,6 +116,7 @@ export default function BlogDetailPage() {
           <Image
             src={blog.coverImage}
             alt={blog.title}
+            loading="eager"
             fill
             className="object-cover"
             priority
