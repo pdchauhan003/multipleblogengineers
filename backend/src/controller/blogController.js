@@ -176,30 +176,36 @@ export const deleteBlog = async (req, res) => {
   }
 }
 
-export const updateBlog=async(req,res)=>{
-  try{
-    const {id}=req.params;
-    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status}=req.body;
+export const updateBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, htmlContent, category, coverImage, excerpt, seoKeywords, status } = req.body || {};
 
-    const checkBlog=await Blog.findById(id);
-    if(!checkBlog){
-      return res.status(404).json({success:false,message:'blog not fount'})
+    const checkBlog = await Blog.findById(id);
+    if (!checkBlog) {
+      return res.status(404).json({ success: false, message: 'blog not fount' });
     }
-    if (!title ||!category ) 
-    {
+
+    if (checkBlog.authorId.toString() !== req.user?._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to update this blog' });
+    }
+
+    if (!title || !category) {
       return res.status(400).json({
         success: false,
         message: "Required fields are missing",
       });
     }
-    const fetchTitle=await Blog.findOne({title, _id:{ $ne: id }}).select('title').lean(); //because that throus error because that is find this blog 
 
-    if(fetchTitle){
-      return res.status(404).json({success:false,message:'this title is exists plz use difference title'})
+    const fetchTitle = await Blog.findOne({ title, _id: { $ne: id } }).select('title').lean();
+
+    if (fetchTitle) {
+      return res.status(404).json({ success: false, message: 'this title is exists plz use difference title' });
     }
-    const slug = title.toLowerCase().trim().replace(/\s+/g, "-"); //create slug using title and replace space with - and uppercase with lowercase
 
-    const existingBlog = await Blog.findOne({ slug , _id: { $ne: id }});  //check slug exits in other ids not current blog id
+    const slug = title.toLowerCase().trim().replace(/\s+/g, "-");
+
+    const existingBlog = await Blog.findOne({ slug, _id: { $ne: id } });
     if (existingBlog) {
       return res.status(409).json({
         success: false,
@@ -207,12 +213,46 @@ export const updateBlog=async(req,res)=>{
       });
     }
 
-    const blog=await Blog.findByIdAndUpdate(id,{title,slug,htmlContent,category,coverImage,excerpt,seoKeywords,status},{ new: true })
-    return res.status(200).json({success: true,message: "Blog created successfully",blog,});
+    let finalCoverImage = coverImage || checkBlog.coverImage || '';
+    if (req.file) {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      const result = await cloudinary.uploader.upload(base64Image, {
+        folder: 'dev_blog_covers',
+      });
+      finalCoverImage = result.secure_url;
+    }
+
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      { title, slug, htmlContent, category, coverImage: finalCoverImage, excerpt, seoKeywords, status },
+      { new: true }
+    );
+    return res.status(200).json({ success: true, message: "Blog updated successfully", blog });
 
   }
-  catch(error){
-    console.log('server error to update blog');
-    return res.status(501).json({success:false,message:'server error to update blog'})
+  catch (error) {
+    console.log('server error to update blog', error);
+    return res.status(501).json({ success: false, message: 'server error to update blog' });
   }
 }
+
+export const getBlogById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const blog = await Blog.findById(id).populate('authorId', 'name email').lean();
+
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    // Only the author can fetch this blog by ID (draft or published) for editing
+    if (blog.authorId._id.toString() !== req.user?._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to view this blog' });
+    }
+
+    return res.status(200).json({ success: true, blog });
+  } catch (error) {
+    console.error('Error in getBlogById:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
