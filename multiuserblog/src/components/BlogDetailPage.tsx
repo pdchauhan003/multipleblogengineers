@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, User as UserIcon, Clock, Tag, AlertCircle } from 'lucide-react';
@@ -127,13 +127,17 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
       <div className="max-w-3xl mx-auto px-4 py-10">
 
         {/* Back button */}
-        <Link
+        {/* <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-gray-400 hover:text-indigo-400 text-sm font-medium transition-colors mb-8 group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
           Back to Feed
-        </Link>
+        </Link> */}
+        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={()=>router.back()}>
+          <ArrowLeft size={16} />
+          Back to Feed
+        </div>
 
         {/* Category badge */}
         <div className="mb-4">
@@ -193,14 +197,10 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
         )}
 
         {/* Footer back button */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center">
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-indigo-600 border border-white/10 hover:border-indigo-500 text-gray-300 hover:text-white text-sm font-semibold rounded-xl transition-all duration-200"
-          >
+        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={()=>router.back()}>
             <ArrowLeft size={16} />
             Back to Feed
-          </Link>
+          
         </div>
 
       </div>

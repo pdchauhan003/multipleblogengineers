@@ -85,7 +85,7 @@ export default function Dashboard() {
           <>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {blogs.map((blog) => (
-                <div key={blog._id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                <div key={blog._id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden" onClick={()=>router.push(`/blog/${blog.slug}`)}>
                   <div className="relative h-52">
                     <Image
                       src={blog.coverImage ||'/placeholder-blog.jpg'}
@@ -102,13 +102,21 @@ export default function Dashboard() {
                     </h2>
 
                     <div className="flex gap-3 mt-4">
-                      <button onClick={() =>router.push(`/dashboard/edit/${blog._id}`)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition">
+                      <button onClick={(e) =>{
+                        e.stopPropagation();
+                        router.push(`/dashboard/edit/${blog._id}`)
+                        }}
+                         className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition">
                         <Pencil size={16} />
                         Update
                       </button>
 
                       <button
-                        onClick={() => handleDelete(blog._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(blog._id)
+                        }}
+            
                         disabled={deleteBlogMutation.isPending}
                         className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 transition"
                       >
