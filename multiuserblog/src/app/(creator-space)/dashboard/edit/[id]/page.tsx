@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import api from '@/api/axios';
@@ -95,6 +96,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
         } else {
           setError(res.data.message || 'Failed to fetch blog details');
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message || 'Failed to fetch blog details';
         setError(msg);

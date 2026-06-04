@@ -17,6 +17,13 @@ const isAuthRoute = (url?: string) =>
   AUTH_ROUTES.some((route) => url?.includes(route));
 
 // Response interceptor to handle token refreshing automatically on 401 errors
+api.interceptors.request.use((config) => {
+  console.log(
+    `[API] ${config.method?.toUpperCase()} ${config.url}`
+  );
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

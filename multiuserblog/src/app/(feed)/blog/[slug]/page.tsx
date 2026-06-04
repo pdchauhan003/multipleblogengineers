@@ -38,17 +38,7 @@ export async function generateMetadata(
   };
 }
 
-// ── Page just renders your existing client component ─────────
-// export default function Page({ params }: { params: { slug: string } }) {
-//   return <BlogDetailPage slug={params.slug} />;
-// }
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function Page({params}: {params: Promise<{ slug: string }>}) {
   const { slug } = await params;
-
   return <BlogDetailPage slug={slug} />;
 }
