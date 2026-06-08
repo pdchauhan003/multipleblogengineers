@@ -1,22 +1,36 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import api from '@/api/axios';
 import BlogDetailPage from '@/components/BlogDetailPage'; // move your current component here
 
 //blod detail fetch function
 async function getBlog(slug: string) {
   try {
-    const res = await api.get(`/api/blog/${slug}`);
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();  // because req send server side then does not get cookie automatically by axios then we read and send manually
+
+    const config: any = {};
+    if (cookieHeader) {
+      config.headers = {
+        Cookie: cookieHeader,
+      };
+    }
+
+    const res = await api.get(`/blog/${slug}`, config);
     return res.data.blog;
-  } catch {
+  } catch (err) {
+    console.log('Metadata fetch error:', err);
     return null;
   }
 }
 
 //this injects SEO into head
 export async function generateMetadata(
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
-  const blog = await getBlog(params.slug);
+  const { slug } = await params;
+  const blog = await getBlog(slug);
 
   if (!blog) {
     return {

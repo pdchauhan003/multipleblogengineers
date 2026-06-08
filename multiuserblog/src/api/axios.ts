@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const isServer = typeof window === 'undefined';    // check server side or not window == undefine then server otherwise client
+const baseURL = isServer
+  ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:2321') + '/api'
+  : '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   withCredentials: true,
   // headers: {
   //   'Content-Type': 'application/json',
