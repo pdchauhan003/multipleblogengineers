@@ -143,6 +143,12 @@ export const googleLogin = async (req, res) => {
         }
 
         // Verify the Google token by fetching user profile from Google info endpoint
+
+    // When backend sends https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}
+    //  the token to that Google URL, Google checks the token:
+    // "Is this token valid and not expired?"
+    // "Which user does this token belong to?"
+    // "Does this app have permission to view their email and profile?"
         const googleResponse = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
         if (!googleResponse.ok) {
             return res.status(400).json({ success: false, message: 'Failed to verify Google access token' });
