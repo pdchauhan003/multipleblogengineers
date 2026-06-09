@@ -21,15 +21,15 @@ export const register = async (req, res) => {
     try {
         console.log('Register request body:', req.body);
         const { name, email, password } = req.body;
-        const [checkName,checkEmail]=await Promise.all([
-            User.findOne({name}).lean(),
-            User.findOne({email}).lean()
+        const [checkName, checkEmail] = await Promise.all([
+            User.findOne({ name }).lean(),
+            User.findOne({ email }).lean()
         ])
-        if(checkName){
-            return res.status(201).json({success:false,message:'name already exists'})
+        if (checkName) {
+            return res.status(201).json({ success: false, message: 'name already exists' })
         }
-        if(checkEmail){
-            return res.status(201).json({success:false,message:'email already exists'})
+        if (checkEmail) {
+            return res.status(201).json({ success: false, message: 'email already exists' })
         }
         const newUser = await User.create({ name, email, password });
         console.log('New User created:', newUser);
@@ -68,12 +68,12 @@ export const login = async (req, res) => {
             success: true,
             message: 'login success',
             forgot: false,
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            // user: {
+            //     _id: user._id,
+            //     name: user.name,
+            //     email: user.email,
+            //     role: user.role
+            // }
         });
     }
     catch (error) {
@@ -144,11 +144,11 @@ export const googleLogin = async (req, res) => {
 
         // Verify the Google token by fetching user profile from Google info endpoint
 
-    // When backend sends https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}
-    //  the token to that Google URL, Google checks the token:
-    // "Is this token valid and not expired?"
-    // "Which user does this token belong to?"
-    // "Does this app have permission to view their email and profile?"
+        // When backend sends https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}
+        //  the token to that Google URL, Google checks the token:
+        // "Is this token valid and not expired?"
+        // "Which user does this token belong to?"
+        // "Does this app have permission to view their email and profile?"
         const googleResponse = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
         if (!googleResponse.ok) {
             return res.status(400).json({ success: false, message: 'Failed to verify Google access token' });
@@ -187,12 +187,12 @@ export const googleLogin = async (req, res) => {
         return res.json({
             success: true,
             message: 'login success',
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            // user: {
+            //     _id: user._id,
+            //     name: user.name,
+            //     email: user.email,
+            //     role: user.role
+            // }
         });
     }
     catch (error) {
@@ -247,11 +247,11 @@ export const verifyOtp = async (req, res) => {
         //  after Success reset
         user.otp = 'VERIFIED_RESET';
         // keep expiry for a short window (e.g. 10 more minutes)
-        user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
+        user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
 
         return res.status(200).json({ success: true, message: "OTP verified successfully" });
-    } 
+    }
     catch (error) {
         console.error("Error in verify-otp API:", error);
         return res.status(500).json({

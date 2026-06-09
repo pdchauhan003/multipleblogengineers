@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense } from 'react';
 import api from '@/api/axios';
 import OtpContentClient from './OtpContentClient';
