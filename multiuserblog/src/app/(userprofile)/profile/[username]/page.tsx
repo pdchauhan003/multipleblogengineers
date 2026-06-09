@@ -1,14 +1,14 @@
 'use client';
 
 import { useAuth } from "@/context/authContext";
-// import { useInfiniteQuery } from "@tanstack/react-query";
-// import api from "@/api/axios";
 import { useMyBlogs } from "@/hooks/useBlog";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { User as UserIcon, Calendar, Mail, Shield, BookOpen, ChevronLeft } from "lucide-react";
 import BlogCard from "@/components/BlogCard";
 import BlogCardSkeleton from "@/components/BlogCardSkelaton";
+import api from "@/api/axios";
+
 
 interface Blog {
   _id: string;
@@ -39,6 +39,8 @@ export default function ProfilePage() {
   const username = params?.username as string;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  const [selectRole, setRole] = useState('');
+
   // Redirect if not authenticated (backend requires auth for profile blogs)
   useEffect(() => {
     if (!authLoading && !currentUser) {
@@ -46,26 +48,25 @@ export default function ProfilePage() {
     }
   }, [currentUser, authLoading, router]);
 
-  const {data,isLoading,isFetchingNextPage,fetchNextPage,hasNextPage} = useMyBlogs(username);
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useMyBlogs(username); //infinite query
 
-  const blogs = data?.pages.flatMap((page) => page.blogs) ?? [];
-
+  const blogs = data?.pages.flatMap((page) => page.blogs) ?? [];  // blogs store 
+  console.log('select role is ', selectRole)
   // Determine user info to display
   const isOwnProfile = currentUser?.name.toLowerCase() === username?.toLowerCase();
-  
+
   // Try to extract author info from first blog if not own profile
   const firstBlogAuthor = blogs[0]?.authorId;
   const displayName = isOwnProfile ? currentUser?.name : (firstBlogAuthor?.name || username);
   const displayEmail = isOwnProfile ? currentUser?.email : firstBlogAuthor?.email;
   const displayRole = isOwnProfile ? currentUser?.role : null;
-  const joinedDate = isOwnProfile && currentUser?.createdAt 
+  const joinedDate = isOwnProfile && currentUser?.createdAt
     ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : null;
 
   // Infinite Scroll Trigger
   useEffect(() => {
     if (!sentinelRef.current) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -93,10 +94,28 @@ export default function ProfilePage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    try {
+      const response = await api.put('/auth/urole', {
+        id: currentUser?._id,
+        role: selectRole,
+      });
+
+      if (response.data.success) {
+        router.refresh(); // Refresh server data
+      }
+    } 
+    catch (error) {
+      alert('update api fetch error');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white animate-fade-in animate-duration-300">
       <div className="max-w-6xl mx-auto px-4 py-8 md:px-8">
-        
+
         {/* Navigation back to dashboard */}
         <div className="mb-6">
           <button
@@ -127,10 +146,29 @@ export default function ProfilePage() {
 
               {/* Role badge */}
               {displayRole && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-xs font-semibold mt-4 capitalize">
-                  <Shield size={12} />
-                  <span>{displayRole}</span>
-                </div>
+                <>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-xs font-semibold mt-4 capitalize">
+                    <Shield size={12} />
+                    <span>{displayRole}</span>
+                  </div>
+                  {
+                    currentUser?.role === 'visitor' && (
+                      <select
+                        value={selectRole}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="text-black bg-amber-50 rounded-2xl my-3 px-2 py-1 w-full"
+                      >
+                        <option value="" disabled>Select Role</option>
+                        <option value="visitor">Visitor</option>
+                        <option value="creator">Creator</option>
+                      </select>
+                    )}
+                  {selectRole !== '' && (
+                    <button onClick={handleSubmit} className="text-black bg-blue-300 px-3 py-1 rounded-2xl w-full font-medium hover:bg-blue-400 transition-colors">
+                      Submit
+                    </button>
+                  )}
+                </>
               )}
 
               <div className="w-full border-t border-white/10 my-5" />

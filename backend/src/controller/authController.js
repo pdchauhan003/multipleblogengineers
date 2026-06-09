@@ -300,3 +300,16 @@ export const resetPassword = async (req, res) => {
         });
     }
 }
+
+
+export const selectRole=async(req,res)=>{
+    try{
+        const {id,role}=req.body;
+        await User.findByIdAndUpdate(id,{role:role},{new:true});
+        res.status(200).json({success:true,message:'update role succes'});
+    }
+    catch(error){
+        console.log('server side error in selection role')
+        res.status(500).json({success:false,message:'server side error in selection role'})
+    }
+}
