@@ -119,7 +119,7 @@ export default function ProfilePage() {
         {/* Navigation back to dashboard */}
         <div className="mb-6">
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.back()}
             className="inline-flex items-center justify-center font-semibold transition-all active:scale-[0.98] rounded-xl px-3 py-1.5 text-xs hover:bg-white/5 text-gray-300 hover:text-white flex items-center gap-2 hover:text-indigo-400 text-gray-400 transition border border-transparent"
           >
             <ChevronLeft size={16} />

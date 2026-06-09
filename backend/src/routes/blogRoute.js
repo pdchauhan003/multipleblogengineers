@@ -9,7 +9,7 @@ blogRouter.post('/create', protect, creatorOnly, upload.single('image'), createB
 blogRouter.get('/', protect, getBlogs);
 // /search MUST be before /:slug so Express doesn't treat "search" as a slug value
 blogRouter.get('/search', protect, searchBlog);
-blogRouter.get('/profile/:username', protect, creatorOnly, getIndividualBlog);
+blogRouter.get('/profile/:username', protect, getIndividualBlog);  // any authenticated user can view a public profile
 blogRouter.get('/:slug', protect, getBlogBySlug);
 blogRouter.delete('/:id', protect, creatorOnly, deleteBlog);
 blogRouter.put('/:id', protect, creatorOnly, upload.single('image'), updateBlog);

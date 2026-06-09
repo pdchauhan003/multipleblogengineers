@@ -163,7 +163,7 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
             <div className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">
               <UserIcon size={13} className="text-indigo-400" />
             </div>
-            <span className="text-gray-300 font-medium" onClick={()=>router.push(`/blog/profile/${blog.authorId?.name}`)}>
+            <span className="text-gray-300 font-medium cursor-pointer hover:text-indigo-400 transition-colors" onClick={()=>router.push(`/profile/${blog.authorId?.name}`)}>
               {blog.authorId?.name ?? 'Unknown Author'}
             </span>
           </div>
