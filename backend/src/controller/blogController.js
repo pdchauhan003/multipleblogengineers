@@ -256,3 +256,48 @@ export const getBlogById = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+
+export const searchBlog = async (req, res) => {
+  try {
+    const { q, cursor, limit: limitStr } = req.query;
+    const limit = parseInt(limitStr) || 10;
+
+    if (!q || q.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Search query is required' });
+    }
+
+    // Case-insensitive title search
+    const query = {
+      status: 'published',
+      title: { $regex: q.trim(), $options: 'i' },
+    };
+
+    // Cursor: createdAt of last fetched blog (consistent with getBlogs)
+    if (cursor) {
+      query.createdAt = { $lt: new Date(cursor) };
+    }
+
+    // Fetch limit + 1 to check if there are more results
+    const blogs = await Blog.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit + 1)
+      .populate('authorId', 'name email')
+      .lean();
+
+    const hasMore = blogs.length > limit;
+    if (hasMore) blogs.pop();
+
+    const nextCursor = hasMore ? blogs[blogs.length - 1].createdAt.toISOString() : null;
+
+    return res.status(200).json({
+      success: true,
+      blogs,
+      nextCursor,
+      hasMore,
+    });
+  } catch (error) {
+    console.log('search serverside error', error);
+    res.status(500).json({ message: 'server side search error', success: false });
+  }
+};
