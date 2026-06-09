@@ -44,7 +44,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         // Attempt to refresh the cookie-based session/tokens
-        await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        await api.post('/auth/refresh', {}, { withCredentials: true });
 
         // Retry the original request using the updated cookie-based session
         return api(originalRequest);
