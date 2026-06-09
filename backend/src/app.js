@@ -5,24 +5,44 @@ import { userRouter } from './routes/authRoute.js';
 import { blogRouter } from './routes/blogRoute.js';
 
 const app = express();
+
+
+// const allowedOrigins = [
+//     'http://localhost:3000',
+// ];
+// if (process.env.CLIENT_URL) {
+//     allowedOrigins.push(process.env.CLIENT_URL);
+// }
+
+// app.use(cors({
+//     origin: (origin, callback) => {
+//         if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('Not allowed by CORS'));
+//         }
+//     },
+//     credentials: true
+// }));
+
+
 const allowedOrigins = [
-    'http://localhost:3000',
+  "http://localhost:3000",
+  "https://multipleblogengineers.vercel.app",
 ];
-if (process.env.CLIENT_URL) {
-    allowedOrigins.push(process.env.CLIENT_URL);
-}
+
+const checkOrigin = (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+  return callback(new Error("Not allowed by CORS"));
+};
 
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true
+  origin: checkOrigin,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ["set-cookie"]
 }));
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
