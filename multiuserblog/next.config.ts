@@ -1,63 +1,28 @@
-// import type { NextConfig } from "next";
-
-// const nextConfig: NextConfig = {
-//   /* config options here */
-//   reactCompiler: true,
-// };
-
-// export default nextConfig;
-
-
-// import type { NextConfig } from "next";
-// /** @type {import('next').NextConfig} */
-
-// const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:2321";
-
-// const nextConfig: NextConfig = {
-//   images: {
-//     remotePatterns: [
-//       {
-//         protocol: 'https',
-//         hostname: 'images.unsplash.com',
-//       },
-//       {
-//         protocol: 'https',
-//         hostname: 'res.cloudinary.com',
-//       },
-//     ],
-//   },
-//   reactCompiler: true,
-//   async rewrites() {
-//     return [
-//       {
-//         source: "/api/:path*",
-//         destination: `${BACKEND_URL}/api/:path*`, // Proxy API requests to Express
-//       },
-//     ];
-//   },
-// };
-
-// export default nextConfig;
-
-
 import type { NextConfig } from "next";
-/** @type {import('next').NextConfig} */
+
+// Falls back to Render URL so Vercel deployment works without any env var configuration
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "https://multipleblogengineers.onrender.com";
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "lh3.googleusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-      {
-        protocol: "https",
-        hostname: "cdn.dummyjson.com",
-      },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "cdn.dummyjson.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
+  },
+
+  // IMPORTANT: Next.js on Vercel requires rewrites here — NOT in vercel.json
+  // vercel.json rewrites are silently ignored for Next.js projects.
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${BACKEND_URL}/api/:path*`,
+      },
+    ];
   },
 };
 
