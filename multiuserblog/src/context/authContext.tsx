@@ -50,11 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkUser = async () => {
     try {
       setForgot(false);
-      // The Axios interceptor automatically handles 401 token refresh and retries seamlessly!
       const res = await api.get('/auth/me');
       setUser(res.data.user);
     } catch {
-      // 401 is expected when user is not logged in — silently clear the user state
       setUser(null);
     } finally {
       setLoading(false);
@@ -76,8 +74,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Login failed';
-      // Only show "Forgot Password" when the backend explicitly says forgot:true
-      // (i.e. wrong password). Invalid email returns forgot:false — don't show the button.
       setForgot(err.response?.data?.forgot === true);
       return { success: false, error: errorMsg };
     }
@@ -134,10 +130,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const sendMail = async (email: string) => {
     try {
       const res = await api.post('/auth/send-mail', { email });
-      // Return the exact message the backend sends (e.g. "OTP sent to your email")
       return { success: true, message: res.data?.message || 'OTP sent successfully' };
     } catch (err: any) {
-      // Surface the exact backend error message instead of a generic fallback
       const errorMsg = err.response?.data?.message || err.message || 'Failed to send OTP email';
       console.error('Forgot password failed:', errorMsg);
       return { success: false, error: errorMsg };

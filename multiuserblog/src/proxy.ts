@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 const protectedRoutes = ['/dashboard','/blog'];
 
 // Routes only accessible when NOT logged in
-const authRoutes = ['/login', '/register'];
+const authRoutes = ['/login', '/register','/otpforgot'];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,14 +21,14 @@ export function proxy(request: NextRequest) {
   );
   const isAuthRoute = authRoutes.some((route) => pathname === route);
 
-  // Case A: Not logged in → trying to access a protected page → redirect to /login
+  //  Not logged in then trying to access a protected page redirect to /login
   if (isProtectedRoute && !isLoggedIn) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Case B: Already logged in → trying to access /login or /register → redirect to /dashboard
+  // Already logged in then trying to access /login or /register → redirect to /dashboard
   if (isAuthRoute && isLoggedIn) {
     return NextResponse.redirect(new URL('/', request.url));
   }
