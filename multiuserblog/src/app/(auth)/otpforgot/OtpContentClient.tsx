@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from "react";
@@ -38,6 +39,7 @@ export default function OtpContentClient({ email, initialError, initialMessage }
       } else {
         setError(res.data.message || 'Verification failed');
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response?.data?.message || 'Something went wrong');
     }
