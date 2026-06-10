@@ -232,7 +232,7 @@ export const updateBlog = async (req, res) => {
   }
   catch (error) {
     console.log('server error to update blog', error);
-    return res.status(501).json({ success: false, message: 'server error to update blog' });
+    return res.status(500).json({ success: false, message: 'server error to update blog' });
   }
 }
 

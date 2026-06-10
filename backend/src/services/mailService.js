@@ -45,7 +45,7 @@ export const sendMail = async (email) => {
 
         await user.save();
 
-        console.log(`\n==========================================\n[OTP GENERATED] OTP for ${email} is: ${otp}\n==========================================\n`);
+       // console.log(`\n==========================================\n[OTP GENERATED] OTP for ${email} is: ${otp}\n==========================================\n`);
 
         //  Send Email
         try {

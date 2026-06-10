@@ -25,10 +25,10 @@ export const register = async (req, res) => {
             User.findOne({ email }).lean()
         ])
         if (checkName) {
-            return res.status(201).json({ success: false, message: 'name already exists' })
+            return res.status(409).json({ success: false, message: 'name already exists' })
         }
         if (checkEmail) {
-            return res.status(201).json({ success: false, message: 'email already exists' })
+            return res.status(409).json({ success: false, message: 'email already exists' })
         }
         const newUser = await User.create({ name, email, password });
         // console.log('New User created:', newUser);
@@ -54,14 +54,13 @@ export const login = async (req, res) => {
         }
         const isMatch = await user.comparePassword(password);
 
-        if (user.failedLoginAttempts >= 5) {  //wrong attemps gretter 5 then fire
-            user.lockUntil = new Date(
-                Date.now() + 15 * 60 * 1000  // 15 minutes  locked account
-            );
-            await user.save();
-        }
         if (!isMatch) {
             user.failedLoginAttempts += 1;
+            if (user.failedLoginAttempts >= 5) {
+                user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+                await user.save();
+                return res.status(429).json({ success: false, message: 'Account locked. Try again later.' });
+            }
             await user.save();
             return res.status(401).json({ success: false, message: 'invalid password', forgot: true });
         }
