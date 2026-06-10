@@ -105,6 +105,7 @@ export default function ProfilePage() {
 
       if (response.data.success) {
         router.refresh(); // Refresh server data
+        alert('role is update success');
       }
     } 
     catch (error) {
