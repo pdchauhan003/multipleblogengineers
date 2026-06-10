@@ -6,6 +6,7 @@ import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserPlus, Mail, Lock, User } from "lucide-react";
+import { RegisterSchema } from "@/services/zodeValidation";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,12 +15,27 @@ const Register = () => {
     password: "",
   });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { register } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+
+    const result = RegisterSchema.safeParse(formData);
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message;
+        }
+      });
+      setFieldErrors(errors);
+      return;
+    }
+
     try {
       const res = await register(formData);
       if (res.success) {
@@ -54,57 +70,87 @@ const Register = () => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Full Name */}
-          <div className="relative">
-            <User
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Full Name"
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              required
-            />
+          <div>
+            <div className="relative">
+              <User
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Full Name"
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition ${
+                  fieldErrors.name
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : "border-white/10 focus:ring-indigo-500"
+                }`}
+                value={formData.name}
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                  if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
+                }}
+                required
+              />
+            </div>
+            {fieldErrors.name && (
+              <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.name}</p>
+            )}
           </div>
 
           {/* Email */}
-          <div className="relative">
-            <Mail
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="email"
-              placeholder="Email Address"
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required
-            />
+          <div>
+            <div className="relative">
+              <Mail
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="email"
+                placeholder="Email Address"
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition ${
+                  fieldErrors.email
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : "border-white/10 focus:ring-indigo-500"
+                }`}
+                value={formData.email}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                }}
+                required
+              />
+            </div>
+            {fieldErrors.email && (
+              <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* Password */}
-          <div className="relative">
-            <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
-            />
+          <div>
+            <div className="relative">
+              <Lock
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition ${
+                  fieldErrors.password
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : "border-white/10 focus:ring-indigo-500"
+                }`}
+                value={formData.password}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                  if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+                }}
+                required
+              />
+            </div>
+            {fieldErrors.password && (
+              <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.password}</p>
+            )}
           </div>
 
           {/* Button */}
