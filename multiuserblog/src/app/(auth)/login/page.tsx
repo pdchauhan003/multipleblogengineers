@@ -5,15 +5,16 @@ import { useState } from "react";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogIn, Mail, Lock, } from "lucide-react";
+import { LogIn, Mail, Lock } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
-
+import { LoginSchema } from "@/services/zodeValidation";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { login, googleLogin, forgot } = useAuth();
   const router = useRouter();
 
@@ -49,6 +50,20 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+
+    const result = LoginSchema.safeParse({ email, password });
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message;
+        }
+      });
+      setFieldErrors(errors);
+      return;
+    }
+
     try {
       const res = await login(email, password);
       if (res.success) {
@@ -87,19 +102,31 @@ const Login = () => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
-          <div className="relative">
-            <Mail
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="email"
-              placeholder="Email address"
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <div>
+            <div className="relative">
+              <Mail
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="email"
+                placeholder="Email address"
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                  fieldErrors.email
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : "border-white/10 focus:ring-indigo-500"
+                }`}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                }}
+                required
+              />
+            </div>
+            {fieldErrors.email && (
+              <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -112,15 +139,24 @@ const Login = () => {
               <input
                 type="password"
                 placeholder="Password"
-                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition ${forgot
-                  ? "border-red-500/60 focus:ring-red-500"
-                  : "border-white/10 focus:ring-indigo-500"
-                  }`}
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                  fieldErrors.password
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : forgot
+                    ? "border-red-500/60 focus:ring-red-500"
+                    : "border-white/10 focus:ring-indigo-500"
+                }`}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+                }}
                 required
               />
             </div>
+            {fieldErrors.password && (
+              <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.password}</p>
+            )}
 
             {/* Forgot password — shown only after a wrong password attempt */}
             <div

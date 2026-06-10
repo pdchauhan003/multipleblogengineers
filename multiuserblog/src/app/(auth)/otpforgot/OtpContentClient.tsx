@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from "react";
@@ -39,12 +40,9 @@ export default function OtpContentClient({ email, initialError, initialMessage }
       } else {
         setError(res.data.message || 'Verification failed');
       }
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Something went wrong');
-      } else {
-        setError('Something went wrong');
-      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Something went wrong');
     }
     setLoading(false);
   };

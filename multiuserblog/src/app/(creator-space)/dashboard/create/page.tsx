@@ -5,6 +5,7 @@ import { useReducer, ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useAuth } from '@/context/authContext';
 import { useRouter } from 'next/navigation';
 import { PenSquare, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { blogFormSchema } from '@/services/zodeValidation';
 
 interface BlogFormState {
   title: string;
@@ -51,6 +52,7 @@ export default function CreateBlogPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -77,10 +79,31 @@ export default function CreateBlogPage() {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setFieldErrors({});
+
+    const result = blogFormSchema.safeParse({
+      title: state.title,
+      category: state.category,
+      excerpt: state.excerpt,
+      htmlContent: state.htmlContent,
+      status: state.status,
+      seoKeywords: state.seoKeywords,
+    });
+
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message;
+        }
+      });
+      setFieldErrors(errors);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      // const res = await api.post('/blog/create', state);
       const formData = new FormData();
       formData.append('title', state.title);
       formData.append('htmlContent', state.htmlContent);
@@ -97,12 +120,10 @@ export default function CreateBlogPage() {
         setSuccess('Blog created successfully! 🎉');
         dispatch({ type: 'RESET' });
       } else {
-        // Backend returned 2xx but success: false (shouldn't normally happen)
         setError(res.data.message || 'Failed to create blog');
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      // Surface the REAL backend error so we know exactly what went wrong
       const msg =
         err.response?.data?.message ||
         err.message ||
@@ -173,10 +194,16 @@ export default function CreateBlogPage() {
                 name="title"
                 placeholder="e.g. How to build a scalable Node.js API"
                 value={state.title}
-                onChange={handleChange}
-                className={inputClass}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: "" }));
+                }}
+                className={`${inputClass} ${fieldErrors.title ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.title && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.title}</p>
+              )}
             </div>
 
             {/* Category */}
@@ -189,10 +216,16 @@ export default function CreateBlogPage() {
                 name="category"
                 placeholder="e.g. Backend, DevOps, React"
                 value={state.category}
-                onChange={handleChange}
-                className={inputClass}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.category) setFieldErrors((prev) => ({ ...prev, category: "" }));
+                }}
+                className={`${inputClass} ${fieldErrors.category ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.category && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.category}</p>
+              )}
             </div>
 
             {/* Excerpt */}
@@ -204,11 +237,17 @@ export default function CreateBlogPage() {
                 name="excerpt"
                 placeholder="A brief summary of what this article covers..."
                 value={state.excerpt}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.excerpt) setFieldErrors((prev) => ({ ...prev, excerpt: "" }));
+                }}
                 rows={3}
-                className={inputClass}
+                className={`${inputClass} ${fieldErrors.excerpt ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.excerpt && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.excerpt}</p>
+              )}
             </div>
 
             {/* HTML Content */}
@@ -220,27 +259,20 @@ export default function CreateBlogPage() {
                 name="htmlContent"
                 placeholder="<h2>Introduction</h2><p>Your article content here...</p>"
                 value={state.htmlContent}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.htmlContent) setFieldErrors((prev) => ({ ...prev, htmlContent: "" }));
+                }}
                 rows={10}
-                className={`${inputClass} font-mono text-xs`}
+                className={`${inputClass} font-mono text-xs ${fieldErrors.htmlContent ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.htmlContent && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.htmlContent}</p>
+              )}
             </div>
 
-            {/* Cover Image URL */}
-            {/* <div>
-              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
-                Cover Image URL
-              </label>
-              <input
-                type="url"
-                name="coverImage"
-                placeholder="https://example.com/image.jpg"
-                value={state.coverImage}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div> */}
+            {/* Cover Image */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                 Cover Image

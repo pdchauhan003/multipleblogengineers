@@ -7,6 +7,7 @@ import { useAuth } from '@/context/authContext';
 import { useRouter } from 'next/navigation';
 import { PenSquare, CheckCircle, AlertCircle, Loader2, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
+import { blogEditFormSchema } from '@/services/zodeValidation';
 
 interface BlogFormState {
   title: string;
@@ -58,6 +59,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
@@ -131,6 +133,28 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
     e.preventDefault();
     setError('');
     setSuccess('');
+    setFieldErrors({});
+
+    const result = blogEditFormSchema.safeParse({
+      title: state.title,
+      category: state.category,
+      excerpt: state.excerpt,
+      htmlContent: state.htmlContent,
+      status: state.status,
+      seoKeywords: state.seoKeywords,
+    });
+
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message;
+        }
+      });
+      setFieldErrors(errors);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -230,10 +254,16 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                 name="title"
                 placeholder="e.g. How to build a scalable Node.js API"
                 value={state.title}
-                onChange={handleChange}
-                className={inputClass}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: "" }));
+                }}
+                className={`${inputClass} ${fieldErrors.title ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.title && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.title}</p>
+              )}
             </div>
 
             {/* Category */}
@@ -246,10 +276,16 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                 name="category"
                 placeholder="e.g. Backend, DevOps, React"
                 value={state.category}
-                onChange={handleChange}
-                className={inputClass}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.category) setFieldErrors((prev) => ({ ...prev, category: "" }));
+                }}
+                className={`${inputClass} ${fieldErrors.category ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.category && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.category}</p>
+              )}
             </div>
 
             {/* Excerpt */}
@@ -261,11 +297,17 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                 name="excerpt"
                 placeholder="A brief summary of what this article covers..."
                 value={state.excerpt}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.excerpt) setFieldErrors((prev) => ({ ...prev, excerpt: "" }));
+                }}
                 rows={3}
-                className={inputClass}
+                className={`${inputClass} ${fieldErrors.excerpt ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.excerpt && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.excerpt}</p>
+              )}
             </div>
 
             {/* HTML Content */}
@@ -277,11 +319,17 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                 name="htmlContent"
                 placeholder="<h2>Introduction</h2><p>Your article content here...</p>"
                 value={state.htmlContent}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (fieldErrors.htmlContent) setFieldErrors((prev) => ({ ...prev, htmlContent: "" }));
+                }}
                 rows={10}
-                className={`${inputClass} font-mono text-xs`}
+                className={`${inputClass} font-mono text-xs ${fieldErrors.htmlContent ? "border-red-500/60 focus:ring-red-500" : ""}`}
                 required
               />
+              {fieldErrors.htmlContent && (
+                <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.htmlContent}</p>
+              )}
             </div>
 
             {/* Cover Image Upload */}

@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { ArrowLeft, User as UserIcon, Clock, Tag, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/authContext';
 import { useSlug } from '@/hooks/useSlug';
+import jsPDF from 'jspdf';
+import { Download } from 'lucide-react';
 
 export default function BlogDetailPage({ slug }: { slug: string }) {
   const router = useRouter();
@@ -42,6 +44,32 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
       </div>
     );
   }
+
+const downloadPDF = (): void => {
+  if (!blog) return;
+  const pdf = new jsPDF();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(blog.htmlContent, 'text/html');
+  let y = 20;
+  pdf.setFontSize(18);
+  pdf.text(blog.title, 10, y);
+  y += 15;
+  const paragraphs: HTMLElement[] = Array.from(
+    doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li')
+  );
+  paragraphs.forEach((el: HTMLElement) => {
+    const text = el.innerText.trim();
+    if (!text) return;
+    const lines = pdf.splitTextToSize(text, 180);
+    if (y + lines.length * 7 > 280) {
+      pdf.addPage();
+      y = 20;
+    }
+    pdf.text(lines, 10, y);
+    y += lines.length * 7 + 5;
+  });
+  pdf.save(`${blog.title}.pdf`);
+};
 
   // ── Blog content skeleton ────────────────────────────────────────────────────
   if (isLoading) {
@@ -179,6 +207,13 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
             </div>
           </div>
         )}
+        <button
+          onClick={downloadPDF}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium"
+        >
+          <Download size={16} />
+          Download PDF
+        </button>
 
         {/* Footer back button */}
         <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={()=>router.back()}>
