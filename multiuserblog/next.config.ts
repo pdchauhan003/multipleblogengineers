@@ -11,7 +11,7 @@
 import type { NextConfig } from "next";
 /** @type {import('next').NextConfig} */
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:2321";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
 
 const nextConfig: NextConfig = {
   images: {

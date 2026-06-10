@@ -53,7 +53,7 @@ export default function ProfilePage() {
   const blogs = data?.pages.flatMap((page) => page.blogs) ?? [];  // blogs store 
   console.log('select role is ', selectRole)
   // Determine user info to display
-  const isOwnProfile = currentUser?.name.toLowerCase() === username?.toLowerCase();
+  const isOwnProfile = currentUser?.name.toLowerCase() === decodeURIComponent(username).toLowerCase();
 
   // Try to extract author info from first blog if not own profile
   const firstBlogAuthor = blogs[0]?.authorId;
