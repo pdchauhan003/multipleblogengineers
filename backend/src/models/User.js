@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
     otpExpiry: { type: Date },
     otpRequestCount: { type: Number, default: 0 },
     otpLastRequest: { type: Date },
+    failedLoginAttempts: {type: Number,default: 0},
+    lockUntil: {type: Date,default: null},
     refreshToken: { type: String } // Store refresh token for rotation/revocation
 }, { timestamps: true });
 

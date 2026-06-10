@@ -45,19 +45,35 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
+
+        if (user.lockUntil &&user.lockUntil > Date.now()) {
+            return res.status(429).json({success: false,message: 'Account locked. Try again later.'});
+        }
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'invalid email', forgot: false });
         }
         const isMatch = await user.comparePassword(password);
+
+        if (user.failedLoginAttempts >= 5) {  //wrong attemps gretter 5 then fire
+            user.lockUntil = new Date(
+                Date.now() + 15 * 60 * 1000  // 15 minutes  locked account
+            ); 
+            await user.save();
+        }
         if (!isMatch) {
+            user.failedLoginAttempts +=1;
+            await user.save();
             return res.status(401).json({ success: false, message: 'invalid password', forgot: true });
         }
 
         const accesstoken = accessToken({ id: user._id });
         const refreshtoken = refreshToken({ id: user._id });
 
-        // BUG FIX: save on instance (user), not on the Model class (User)
         user.refreshToken = refreshtoken;
+        user.failedLoginAttempts = 0;
+        user.lockUntil = null;
+
         await user.save();
 
         res.cookie('accessToken', accesstoken, getCookieOptions(req, 15 * 60 * 1000));
@@ -68,12 +84,6 @@ export const login = async (req, res) => {
             success: true,
             message: 'login success',
             forgot: false,
-            // user: {
-            //     _id: user._id,
-            //     name: user.name,
-            //     email: user.email,
-            //     role: user.role
-            // }
         });
     }
     catch (error) {
@@ -187,12 +197,6 @@ export const googleLogin = async (req, res) => {
         return res.json({
             success: true,
             message: 'login success',
-            // user: {
-            //     _id: user._id,
-            //     name: user.name,
-            //     email: user.email,
-            //     role: user.role
-            // }
         });
     }
     catch (error) {
