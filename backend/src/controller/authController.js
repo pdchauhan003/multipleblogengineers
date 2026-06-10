@@ -45,12 +45,12 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
 
-        if (user.lockUntil &&user.lockUntil > Date.now()) {
-            return res.status(429).json({success: false,message: 'Account locked. Try again later.'});
-        }
-
         if (!user) {
             return res.status(401).json({ success: false, message: 'invalid email', forgot: false });
+        }
+
+        if (user.lockUntil && user.lockUntil > Date.now()) {
+            return res.status(429).json({success: false,message: 'Account locked. Try again later.'});
         }
         const isMatch = await user.comparePassword(password);
 
