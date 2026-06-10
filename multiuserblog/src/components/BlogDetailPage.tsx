@@ -8,22 +8,6 @@ import { ArrowLeft, User as UserIcon, Clock, Tag, AlertCircle } from 'lucide-rea
 import { useAuth } from '@/context/authContext';
 import { useSlug } from '@/hooks/useSlug';
 
-interface Blog {
-  _id: string;
-  title: string;
-  slug: string;
-  htmlContent: string;
-  excerpt: string;
-  category: string;
-  coverImage?: string;
-  seoKeywords?: string;
-  createdAt: string;
-  authorId?: {
-    name: string;
-    email: string;
-  };
-}
-
 export default function BlogDetailPage({ slug }: { slug: string }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();

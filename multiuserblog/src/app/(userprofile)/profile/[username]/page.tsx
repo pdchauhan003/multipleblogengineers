@@ -9,29 +9,6 @@ import BlogCard from "@/components/BlogCard";
 import BlogCardSkeleton from "@/components/BlogCardSkelaton";
 import api from "@/api/axios";
 
-
-interface Blog {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  coverImage?: string;
-  status: 'draft' | 'published';
-  createdAt: string;
-  authorId?: {
-    name: string;
-    email: string;
-  };
-}
-
-interface FetchBlogsResponse {
-  success: boolean;
-  blogs: Blog[];
-  nextCursor: string | null;
-  hasMore: boolean;
-}
-
 export default function ProfilePage() {
   const { user: currentUser, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -108,6 +85,7 @@ export default function ProfilePage() {
       }
     } 
     catch (error) {
+      console.error('Failed to update role:', error);
       alert('update api fetch error');
     }
   };

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, KeyRound, Lock, ShieldCheck } from "lucide-react";
 import api from "@/api/axios";
+import axios from "axios";
 
 type Step = "otp" | "reset" | "success";
 
@@ -38,8 +39,12 @@ export default function OtpContentClient({ email, initialError, initialMessage }
       } else {
         setError(res.data.message || 'Verification failed');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Something went wrong');
+      } else {
+        setError('Something went wrong');
+      }
     }
     setLoading(false);
   };
@@ -68,8 +73,12 @@ export default function OtpContentClient({ email, initialError, initialMessage }
       } else {
         setError(res.data.message || 'Failed to reset password');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Something went wrong');
+      } else {
+        setError('Something went wrong');
+      }
     }
     setLoading(false);
   };
@@ -86,8 +95,12 @@ export default function OtpContentClient({ email, initialError, initialMessage }
       } else {
         setError(res.data.message || 'Failed to resend OTP');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Something went wrong');
+      } else {
+        setError('Something went wrong');
+      }
     }
     setResendLoading(false);
   };

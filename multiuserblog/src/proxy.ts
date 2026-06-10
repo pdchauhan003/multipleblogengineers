@@ -7,7 +7,7 @@ const protectedRoutes = ['/dashboard','/blog'];
 // Routes only accessible when NOT logged in
 const authRoutes = ['/login', '/register'];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check for auth tokens in cookies (adjust cookie names to match your Express backend)
