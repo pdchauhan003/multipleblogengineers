@@ -6,20 +6,18 @@ import { User } from './src/models/User.js';
 
 
 const port=process.env.PORT;
-app.get('/',async(req,res)=>{
-    await connectDB()
-    try{
-        const user=await User.find().select('name');
-        console.log('username is ihoem...',user)
-        res.send('username',user)
-    }
-    catch(error){
-    console.log('mongo error...')
-    res.send('mongo error.....')
-    }
-   
-    
-})
+// app.get('/',async(req,res)=>{
+//     await connectDB()
+//     try{
+//         const user=await User.find().select('name');
+//         console.log('username is ihoem...',user)
+//         res.send('username',user)
+//     }
+//     catch(error){
+//     console.log('mongo error...')
+//     res.send('mongo error.....')
+//     }
+// })
 
 const startServer = async () => {
     await connectDB();
