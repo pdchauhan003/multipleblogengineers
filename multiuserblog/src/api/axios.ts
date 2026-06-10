@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const isServer = typeof window === 'undefined';    // check server side or not window == undefine then server otherwise client
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://multipleblogengineers.onrender.com';
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL 
 const baseURL = isServer
   ? `${backendUrl}/api`   // SSR: direct call to Render (server-to-server, no CORS)
   : '/api';               // Client: goes through Vercel proxy (vercel.json rewrite → Render)

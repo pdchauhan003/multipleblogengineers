@@ -30,7 +30,7 @@ export default function ProfilePage() {
   const blogs = data?.pages.flatMap((page) => page.blogs) ?? [];  // blogs store 
   console.log('select role is ', selectRole)
   // Determine user info to display
-  const isOwnProfile = currentUser?.name.toLowerCase() === username?.toLowerCase();
+  const isOwnProfile = currentUser?.name.toLowerCase() === decodeURIComponent(username).toLowerCase();;
 
   // Try to extract author info from first blog if not own profile
   const firstBlogAuthor = blogs[0]?.authorId;
@@ -57,6 +57,9 @@ export default function ProfilePage() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  console.log('name is ',currentUser?.name)
+  console.log('role is ::::::: ',currentUser?.name.toLowerCase() )
+  console.log('other data is ',username?.toLowerCase())
   if (authLoading || (!currentUser && !isLoading)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
@@ -82,6 +85,7 @@ export default function ProfilePage() {
 
       if (response.data.success) {
         router.refresh(); // Refresh server data
+        alert('role is updated');
       }
     } 
     catch (error) {

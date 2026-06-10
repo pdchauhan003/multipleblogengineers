@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 // Falls back to Render URL so Vercel deployment works without any env var configuration
+
+console.log('BACKEND_URL ::::',process.env.NEXT_PUBLIC_BACKEND_URL)
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://multipleblogengineers.onrender.com";
+  process.env.NEXT_PUBLIC_BACKEND_URL 
 
 const nextConfig: NextConfig = {
   images: {
