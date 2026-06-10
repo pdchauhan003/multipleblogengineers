@@ -79,7 +79,6 @@ export default function ProfilePage() {
     e.preventDefault();
     try {
       const response = await api.put('/auth/urole', {
-        id: currentUser?._id,
         role: selectRole,
       });
 

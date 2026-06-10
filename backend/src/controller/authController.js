@@ -19,7 +19,6 @@ const getCookieOptions = (req, maxAge) => {
 
 export const register = async (req, res) => {
     try {
-        console.log('Register request body:', req.body);
         const { name, email, password } = req.body;
         const [checkName, checkEmail] = await Promise.all([
             User.findOne({ name }).lean(),
@@ -68,12 +67,6 @@ export const login = async (req, res) => {
             success: true,
             message: 'login success',
             forgot: false,
-            // user: {
-            //     _id: user._id,
-            //     name: user.name,
-            //     email: user.email,
-            //     role: user.role
-            // }
         });
     }
     catch (error) {
@@ -95,6 +88,10 @@ export const refresh = async (req, res) => {
         }
         const accesstoken = accessToken({ id: user._id });
         res.cookie('accessToken', accesstoken, getCookieOptions(req, 15 * 60 * 1000));
+        const refreshtoken=refreshToken({id:user._id});
+        res.cookie('refreshToken', refreshtoken, getCookieOptions(req, 7 * 24 * 60 * 60 * 1000));
+        user.refreshToken=refreshtoken;
+        await user.save();
         return res.json({ success: true, message: 'access token refreshed' });
     }
     catch (error) {
@@ -160,7 +157,6 @@ export const googleLogin = async (req, res) => {
         if (!email) {
             return res.status(400).json({ success: false, message: 'Google account does not contain a valid email' });
         }
-
         let user = await User.findOne({ email });
 
         if (!user) {
@@ -187,12 +183,6 @@ export const googleLogin = async (req, res) => {
         return res.json({
             success: true,
             message: 'login success',
-            // user: {
-            //     _id: user._id,
-            //     name: user.name,
-            //     email: user.email,
-            //     role: user.role
-            // }
         });
     }
     catch (error) {
@@ -211,7 +201,7 @@ export const forgotSendMail = async (req, res) => {
         if (!mailsend.success) {
             return res.status(400).json({ success: false, message: mailsend.message });
         }
-        return res.status(200).json({ success: true, message: mailsend.message, otp: mailsend.otp });
+        return res.status(200).json({ success: true, message: mailsend.message });
     }
     catch (error) {
         console.error('Error in forgotSendMail:', error);
@@ -304,8 +294,8 @@ export const resetPassword = async (req, res) => {
 
 export const selectRole=async(req,res)=>{
     try{
-        const {id,role}=req.body;
-        await User.findByIdAndUpdate(id,{role:role},{new:true});
+        const {role}=req.body;
+        await User.findByIdAndUpdate(req.user._id,{role:role},{new:true});
         res.status(200).json({success:true,message:'update role succes'});
     }
     catch(error){
