@@ -31,7 +31,7 @@ export const register = async (req, res) => {
             return res.status(201).json({ success: false, message: 'email already exists' })
         }
         const newUser = await User.create({ name, email, password });
-        console.log('New User created:', newUser);
+        // console.log('New User created:', newUser);
         return res.status(201).json({ success: true, message: 'user register success' });
     }
     catch (error) {
@@ -50,18 +50,18 @@ export const login = async (req, res) => {
         }
 
         if (user.lockUntil && user.lockUntil > Date.now()) {
-            return res.status(429).json({success: false,message: 'Account locked. Try again later.'});
+            return res.status(429).json({ success: false, message: 'Account locked. Try again later.' });
         }
         const isMatch = await user.comparePassword(password);
 
         if (user.failedLoginAttempts >= 5) {  //wrong attemps gretter 5 then fire
             user.lockUntil = new Date(
                 Date.now() + 15 * 60 * 1000  // 15 minutes  locked account
-            ); 
+            );
             await user.save();
         }
         if (!isMatch) {
-            user.failedLoginAttempts +=1;
+            user.failedLoginAttempts += 1;
             await user.save();
             return res.status(401).json({ success: false, message: 'invalid password', forgot: true });
         }
@@ -104,9 +104,9 @@ export const refresh = async (req, res) => {
         }
         const accesstoken = accessToken({ id: user._id });
         res.cookie('accessToken', accesstoken, getCookieOptions(req, 15 * 60 * 1000));
-        const refreshtoken=refreshToken({id:user._id});
+        const refreshtoken = refreshToken({ id: user._id });
         res.cookie('refreshToken', refreshtoken, getCookieOptions(req, 7 * 24 * 60 * 60 * 1000));
-        user.refreshToken=refreshtoken;
+        user.refreshToken = refreshtoken;
         await user.save();
         return res.json({ success: true, message: 'access token refreshed' });
     }
@@ -308,14 +308,14 @@ export const resetPassword = async (req, res) => {
 }
 
 
-export const selectRole=async(req,res)=>{
-    try{
-        const {role}=req.body;
-        await User.findByIdAndUpdate(req.user._id,{role:role},{new:true});
-        res.status(200).json({success:true,message:'update role succes'});
+export const selectRole = async (req, res) => {
+    try {
+        const { role } = req.body;
+        await User.findByIdAndUpdate(req.user._id, { role: role }, { new: true });
+        res.status(200).json({ success: true, message: 'update role succes' });
     }
-    catch(error){
+    catch (error) {
         console.log('server side error in selection role')
-        res.status(500).json({success:false,message:'server side error in selection role'})
+        res.status(500).json({ success: false, message: 'server side error in selection role' })
     }
 }

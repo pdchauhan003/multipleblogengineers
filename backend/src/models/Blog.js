@@ -12,7 +12,8 @@ const blogSchema=new mg.Schema({
     authorId:{type:mg.Schema.Types.ObjectId,ref:'User'},
     createdAt:{type:Date,default:Date.now},
 })
-blogSchema.index({slug:1,autherId:1,createdAt:1,status:1});
+blogSchema.index({slug:1,authorId:1,createdAt:1,status:1});
+
 
 const Blog=mg.model('Blog',blogSchema);
 

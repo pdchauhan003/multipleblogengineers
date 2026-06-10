@@ -21,6 +21,8 @@ export const sendMail = async (email) => {
             }
         }
 
+        user.otpRequestCount = user.otpRequestCount || 0;
+
         // Limit check
         if (user.otpRequestCount >= 5) {
             return {
@@ -38,7 +40,7 @@ export const sendMail = async (email) => {
         //  Update user
         user.otp = otp;
         user.otpExpiry = otpExpiry;
-        user.otpRequestCount += 1;
+        user.otpRequestCount = (user.otpRequestCount || 0) + 1;
         user.otpLastRequest = now;
 
         await user.save();

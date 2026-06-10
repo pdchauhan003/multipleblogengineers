@@ -16,7 +16,7 @@ export const createBlog = async (req, res) => {
     const fetchTitle=await Blog.findOne({title}).select('title').lean();
 
     if(fetchTitle){
-      return res.status(501).json({success:false,message:'this title is exists plz use difference title'})
+      return res.status(409).json({success:false,message:'this title is exists plz use difference title'})
     }
     const slug = title.toLowerCase().trim().replace(/\s+/g, "-"); //create slug using title and replace space with - and uppercase with lowercase
 
@@ -200,7 +200,7 @@ export const updateBlog = async (req, res) => {
     const fetchTitle = await Blog.findOne({ title, _id: { $ne: id } }).select('title').lean();
 
     if (fetchTitle) {
-      return res.status(404).json({ success: false, message: 'this title is exists plz use difference title' });
+      return res.status(409).json({ success: false, message: 'this title is exists plz use difference title' });
     }
 
     const slug = title.toLowerCase().trim().replace(/\s+/g, "-");
