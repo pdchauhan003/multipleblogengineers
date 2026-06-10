@@ -28,10 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/',(req,res)=>{
-    console.log('run home page...')
-    res.send('run home page......')
-})
+
 app.use('/api/auth', userRouter);
 app.use('/api/blog',blogRouter);
 
