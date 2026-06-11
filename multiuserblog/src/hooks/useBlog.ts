@@ -44,7 +44,7 @@ export const useMyBlogs = (username: string) => {
 
       return res.data;
     },
-
+    enabled: !!username,
     getNextPageParam: (lastPage) =>
       lastPage.hasMore
         ? lastPage.nextCursor

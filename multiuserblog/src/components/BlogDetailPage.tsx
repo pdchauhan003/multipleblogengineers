@@ -22,14 +22,14 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
   }, [user, authLoading, router]);
 
   // Fetch blog by slug
-  const {data: blog,isLoading,error,} = useSlug(user ? slug : undefined);
+  const { data: blog, isLoading, error, } = useSlug(slug);
 
   const formattedDate = blog
     ? new Date(blog.createdAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '';
 
   // ── Auth / session loading ───────────────────────────────────────────────────
@@ -45,31 +45,31 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
     );
   }
 
-const downloadPDF = (): void => {
-  if (!blog) return;
-  const pdf = new jsPDF();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(blog.htmlContent, 'text/html');
-  let y = 20;
-  pdf.setFontSize(18);
-  pdf.text(blog.title, 10, y);
-  y += 15;
-  const paragraphs: HTMLElement[] = Array.from(
-    doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li')
-  );
-  paragraphs.forEach((el: HTMLElement) => {
-    const text = el.innerText.trim();
-    if (!text) return;
-    const lines = pdf.splitTextToSize(text, 180);
-    if (y + lines.length * 7 > 280) {
-      pdf.addPage();
-      y = 20;
-    }
-    pdf.text(lines, 10, y);
-    y += lines.length * 7 + 5;
-  });
-  pdf.save(`${blog.title}.pdf`);
-};
+  const downloadPDF = (): void => {
+    if (!blog) return;
+    const pdf = new jsPDF();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(blog.htmlContent, 'text/html');
+    let y = 20;
+    pdf.setFontSize(18);
+    pdf.text(blog.title, 10, y);
+    y += 15;
+    const paragraphs: HTMLElement[] = Array.from(
+      doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li')
+    );
+    paragraphs.forEach((el: HTMLElement) => {
+      const text = el.innerText.trim();
+      if (!text) return;
+      const lines = pdf.splitTextToSize(text, 180);
+      if (y + lines.length * 7 > 280) {
+        pdf.addPage();
+        y = 20;
+      }
+      pdf.text(lines, 10, y);
+      y += lines.length * 7 + 5;
+    });
+    pdf.save(`${blog.title}.pdf`);
+  };
 
   // ── Blog content skeleton ────────────────────────────────────────────────────
   if (isLoading) {
@@ -146,7 +146,7 @@ const downloadPDF = (): void => {
           <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
           Back to Feed
         </Link> */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={()=>router.back()}>
+        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={() => router.back()}>
           <ArrowLeft size={16} />
           Back to Feed
         </div>
@@ -175,7 +175,7 @@ const downloadPDF = (): void => {
             <div className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">
               <UserIcon size={13} className="text-indigo-400" />
             </div>
-            <span className="text-gray-300 font-medium cursor-pointer hover:text-indigo-400 transition-colors" onClick={()=>router.push(`/profile/${blog.authorId?.name}`)}>
+            <span className="text-gray-300 font-medium cursor-pointer hover:text-indigo-400 transition-colors" onClick={() => router.push(`/profile/${blog.authorId?.name}`)}>
               {blog.authorId?.name ?? 'Unknown Author'}
             </span>
           </div>
@@ -216,10 +216,10 @@ const downloadPDF = (): void => {
         </button>
 
         {/* Footer back button */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={()=>router.back()}>
-            <ArrowLeft size={16} />
-            Back to Feed
-          
+        <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={() => router.back()}>
+          <ArrowLeft size={16} />
+          Back to Feed
+
         </div>
 
       </div>
