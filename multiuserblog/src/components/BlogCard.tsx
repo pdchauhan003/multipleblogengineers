@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { User as UserIcon, PenSquare, Clock, Tag,} from "lucide-react";
 import Image from "next/image";
+import { handlePayment } from "@/handler/handlePayment";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BlogCard({ blog }: { blog: any }) {
   const date = new Date(blog.createdAt).toLocaleDateString('en-US', {
@@ -57,6 +58,16 @@ function BlogCard({ blog }: { blog: any }) {
               <span>{date}</span>
             </div>
           </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handlePayment(blog._id);
+            }}
+            className="w-full mt-2 py-2 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-medium rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.98] text-center text-sm border border-indigo-400/20"
+          >
+            Purchase to Open
+          </button>
         </div>
       </div>
     </Link>
