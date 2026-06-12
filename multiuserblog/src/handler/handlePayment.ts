@@ -2,7 +2,7 @@
 import api from "@/api/axios"
 import { loadScript } from "@/services/razorpayScript"
 
-export const handlePayment=async(blogId:any)=>{
+export const handlePayment=async(blogId:any, onSuccess?: () => void)=>{
     try {
         await loadScript();
         
@@ -21,6 +21,9 @@ export const handlePayment=async(blogId:any)=>{
                 const verify=await api.post('/payment/verify',response);
                 if(verify){
                     alert('Payment Success');
+                    if (onSuccess) {
+                        onSuccess();
+                    }
                 }
             },
         };

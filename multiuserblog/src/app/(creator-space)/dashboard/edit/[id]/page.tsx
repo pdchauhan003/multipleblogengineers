@@ -16,7 +16,7 @@ interface BlogFormState {
   coverImage: string;
   excerpt: string;
   seoKeywords: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'paid';
 }
 
 type Action =
@@ -397,6 +397,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
               >
                 <option value="draft">Draft (not visible on feed)</option>
                 <option value="published">Published (visible on feed)</option>
+                <option value="paid">Paid (requires payment, visible on feed)</option>
               </select>
             </div>
 

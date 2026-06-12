@@ -8,7 +8,7 @@ const blogSchema=new mg.Schema({
     coverImage:{type:String},
     excerpt:{type:String,required:true},
     seoKeywords:{type:String},
-    status:{type:String,enum:['draft','published'],default:'draft'},
+    status:{type:String,enum:['draft','published','paid'],default:'draft'},
     authorId:{type:mg.Schema.Types.ObjectId,ref:'User'},
     createdAt:{type:Date,default:Date.now},
 })

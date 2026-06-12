@@ -1,6 +1,7 @@
 import { Blog } from "../models/Blog.js";
 import { User } from "../models/User.js";
 import { cloudinary } from "../config/cloudinary.js";
+import { Payment } from "../models/Payment.js";
 
 export const createBlog = async (req, res) => {
   try {
@@ -59,7 +60,7 @@ export const getBlogs = async (req, res) => {
     const cursor = req.query.cursor; // ISO date string of the last fetched blog's createdAt
 
     // Build the query — if cursor exists, fetch blogs older than the cursor date
-    const query = { status: 'published' };
+    const query = { status: { $in: ['published', 'paid'] } };
     if (cursor) {
       query.createdAt = { $lt: new Date(cursor) };
     }
@@ -77,9 +78,29 @@ export const getBlogs = async (req, res) => {
     // The next cursor is the createdAt of the last item in the returned list
     const nextCursor = hasMore ? blogs[blogs.length - 1].createdAt.toISOString() : null;
 
+    // Fetch user verified payments
+    const userPayments = req.user ? await Payment.find({
+      user: req.user._id,
+      status: 'paid',
+      isVerified: true
+    }).select('blogId').lean() : [];
+    const paidBlogIds = new Set(userPayments.map(p => p.blogId?.toString()));
+
+    const blogsWithPayment = blogs.map(blog => {
+      const authorId = blog.authorId?._id || blog.authorId;
+      const isAuthor = req.user && (req.user._id.toString() === authorId.toString());
+      const paymentRequired = blog.status === 'paid';
+      const hasPaid = isAuthor || !paymentRequired || paidBlogIds.has(blog._id.toString());
+      return {
+        ...blog,
+        paymentRequired,
+        hasPaid
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      blogs,
+      blogs: blogsWithPayment,
       nextCursor,
       hasMore,
     });
@@ -97,7 +118,7 @@ export const getBlogs = async (req, res) => {
 export const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const blog = await Blog.findOne({ slug, status: 'published' })
+    const blog = await Blog.findOne({ slug, status: { $in: ['published', 'paid'] } })
       .populate('authorId', 'name email')
       .lean();
 
@@ -105,7 +126,43 @@ export const getBlogBySlug = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
 
-    return res.status(200).json({ success: true, blog });
+    const isAuthor = req.user && (req.user._id.toString() === (blog.authorId?._id || blog.authorId).toString());
+    const paymentRequired = blog.status === 'paid';
+    
+    let hasPaid = isAuthor || !paymentRequired;
+    if (paymentRequired && !isAuthor && req.user) {
+      const payment = await Payment.findOne({
+        user: req.user._id,
+        blogId: blog._id,
+        status: 'paid',
+        isVerified: true
+      });
+      if (payment) {
+        hasPaid = true;
+      }
+    }
+
+    if (paymentRequired && !hasPaid) {
+      // Return details but hide the htmlContent
+      return res.status(200).json({
+        success: true,
+        blog: {
+          ...blog,
+          htmlContent: '', // Hide htmlContent
+          paymentRequired: true,
+          hasPaid: false
+        }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      blog: {
+        ...blog,
+        paymentRequired,
+        hasPaid: true
+      }
+    });
   } catch (error) {
     console.error('Error in getBlogBySlug:', error);
     return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -123,7 +180,7 @@ export const getIndividualBlog=async(req,res)=>{
         return res.status(404).json({ message: "User not found" });
     }
 
-    const query = { status: 'published' };
+    const query = { status: { $in: ['published', 'paid'] } };
     if (cursor) {
       query.createdAt = { $lt: new Date(cursor) };
     }
@@ -141,9 +198,29 @@ export const getIndividualBlog=async(req,res)=>{
     // The next cursor is the createdAt of the last item in the returned list
     const nextCursor = hasMore ? blogs[blogs.length - 1].createdAt.toISOString() : null;
 
+    // Fetch user verified payments
+    const userPayments = req.user ? await Payment.find({
+      user: req.user._id,
+      status: 'paid',
+      isVerified: true
+    }).select('blogId').lean() : [];
+    const paidBlogIds = new Set(userPayments.map(p => p.blogId?.toString()));
+
+    const blogsWithPayment = blogs.map(blog => {
+      const authorId = blog.authorId?._id || blog.authorId;
+      const isAuthor = req.user && (req.user._id.toString() === authorId.toString());
+      const paymentRequired = blog.status === 'paid';
+      const hasPaid = isAuthor || !paymentRequired || paidBlogIds.has(blog._id.toString());
+      return {
+        ...blog,
+        paymentRequired,
+        hasPaid
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      blogs,
+      blogs: blogsWithPayment,
       nextCursor,
       hasMore,
     });
@@ -269,7 +346,7 @@ export const searchBlog = async (req, res) => {
 
     // Case-insensitive title search
     const query = {
-      status: 'published',
+      status: { $in: ['published', 'paid'] },
       title: { $regex: q.trim(), $options: 'i' },
     };
 
@@ -290,9 +367,29 @@ export const searchBlog = async (req, res) => {
 
     const nextCursor = hasMore ? blogs[blogs.length - 1].createdAt.toISOString() : null;
 
+    // Fetch user verified payments
+    const userPayments = req.user ? await Payment.find({
+      user: req.user._id,
+      status: 'paid',
+      isVerified: true
+    }).select('blogId').lean() : [];
+    const paidBlogIds = new Set(userPayments.map(p => p.blogId?.toString()));
+
+    const blogsWithPayment = blogs.map(blog => {
+      const authorId = blog.authorId?._id || blog.authorId;
+      const isAuthor = req.user && (req.user._id.toString() === authorId.toString());
+      const paymentRequired = blog.status === 'paid';
+      const hasPaid = isAuthor || !paymentRequired || paidBlogIds.has(blog._id.toString());
+      return {
+        ...blog,
+        paymentRequired,
+        hasPaid
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      blogs,
+      blogs: blogsWithPayment,
       nextCursor,
       hasMore,
     });

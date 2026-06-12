@@ -17,7 +17,9 @@ interface Blog {
   excerpt: string;
   category: string;
   coverImage?: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'paid';
+  paymentRequired?: boolean;
+  hasPaid?: boolean;
   createdAt: string;
   authorId?: {
     name: string;

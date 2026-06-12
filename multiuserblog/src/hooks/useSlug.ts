@@ -12,6 +12,9 @@ export interface Blog {
   category: string;
   coverImage?: string;
   seoKeywords?: string;
+  status?: 'draft' | 'published' | 'paid';
+  paymentRequired?: boolean;
+  hasPaid?: boolean;
   createdAt: string;
   authorId?: {
     name: string;
