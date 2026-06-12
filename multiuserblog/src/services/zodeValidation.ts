@@ -18,6 +18,7 @@ export const blogFormSchema = z.object({
   htmlContent: z.string().min(20, "HTML Content must be at least 20 characters"),
   status: z.enum(["draft", "published", "paid"]),
   seoKeywords: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be a positive number").optional(),
 });
 
 export const blogEditFormSchema = blogFormSchema;

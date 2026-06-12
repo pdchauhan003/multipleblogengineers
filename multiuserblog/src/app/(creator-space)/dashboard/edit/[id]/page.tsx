@@ -17,10 +17,11 @@ interface BlogFormState {
   excerpt: string;
   seoKeywords: string;
   status: 'draft' | 'published' | 'paid';
+  price: number;
 }
 
 type Action =
-  | { type: 'UPDATE_FIELD'; field: keyof BlogFormState; value: string }
+  | { type: 'UPDATE_FIELD'; field: keyof BlogFormState; value: string | number }
   | { type: 'SET_FIELDS'; payload: BlogFormState }
   | { type: 'RESET' };
 
@@ -32,6 +33,7 @@ const initialState: BlogFormState = {
   excerpt: '',
   seoKeywords: '',
   status: 'draft',
+  price: 0,
 };
 
 function reducer(state: BlogFormState, action: Action): BlogFormState {
@@ -90,6 +92,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
               excerpt: blog.excerpt,
               seoKeywords: blog.seoKeywords || '',
               status: blog.status,
+              price: blog.price || 0,
             },
           });
           if (blog.coverImage) {
@@ -143,6 +146,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
       htmlContent: state.htmlContent,
       status: state.status,
       seoKeywords: state.seoKeywords,
+      price: state.price,
     });
 
     if (!result.success) {
@@ -166,6 +170,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
       formData.append('excerpt', state.excerpt);
       formData.append('seoKeywords', state.seoKeywords);
       formData.append('status', state.status);
+      formData.append('price', state.price.toString());
 
       if (imageFile) {
         formData.append('image', imageFile);
@@ -400,6 +405,31 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                 <option value="paid">Paid (requires payment, visible on feed)</option>
               </select>
             </div>
+
+            {/* Price */}
+            {state.status === 'paid' && (
+              <div className="animate-fadeIn mt-4">
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                  Blog Price (INR) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="e.g. 500"
+                  min="0"
+                  value={state.price || ''}
+                  onChange={(e) => {
+                    handleChange(e);
+                    if (fieldErrors.price) setFieldErrors((prev) => ({ ...prev, price: "" }));
+                  }}
+                  className={`${inputClass} ${fieldErrors.price ? "border-red-500/60 focus:ring-red-500" : ""}`}
+                  required
+                />
+                {fieldErrors.price && (
+                  <p className="text-red-400 text-xs mt-1 animate-fadeIn">{fieldErrors.price}</p>
+                )}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button

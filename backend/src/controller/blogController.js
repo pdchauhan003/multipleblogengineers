@@ -5,7 +5,7 @@ import { Payment } from "../models/Payment.js";
 
 export const createBlog = async (req, res) => {
   try {
-    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status} = req.body || {};
+    const {title,htmlContent,category,coverImage,excerpt,seoKeywords,status,price} = req.body || {};
     // if (!title ||!htmlContent ||!category ||!excerpt)  //checks required fields
     if (!title ||!category ) 
     {
@@ -38,7 +38,8 @@ export const createBlog = async (req, res) => {
       finalCoverImage = result.secure_url;
     }
 
-    const blog = await Blog.create({title,slug,htmlContent,category,coverImage:finalCoverImage,excerpt,seoKeywords,status,authorId: req.user?._id,});
+    const parsedPrice = status === 'paid' ? (Number(price) || 0) : 0;
+    const blog = await Blog.create({title,slug,htmlContent,category,coverImage:finalCoverImage,excerpt,seoKeywords,status,price: parsedPrice,authorId: req.user?._id,});
     return res.status(200).json({
       success: true,
       message: "Blog created successfully",
@@ -256,7 +257,7 @@ export const deleteBlog = async (req, res) => {
 export const updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, htmlContent, category, coverImage, excerpt, seoKeywords, status } = req.body || {};
+    const { title, htmlContent, category, coverImage, excerpt, seoKeywords, status, price } = req.body || {};
 
     const checkBlog = await Blog.findById(id);
     if (!checkBlog) {
@@ -299,9 +300,10 @@ export const updateBlog = async (req, res) => {
       finalCoverImage = result.secure_url;
     }
 
+    const parsedPrice = status === 'paid' ? (Number(price) || 0) : 0;
     const blog = await Blog.findByIdAndUpdate(
       id,
-      { title, slug, htmlContent, category, coverImage: finalCoverImage, excerpt, seoKeywords, status },
+      { title, slug, htmlContent, category, coverImage: finalCoverImage, excerpt, seoKeywords, status, price: parsedPrice },
       { new: true }
     );
     return res.status(200).json({ success: true, message: "Blog updated successfully", blog });

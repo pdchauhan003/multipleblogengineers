@@ -216,7 +216,7 @@ const downloadPDF = (): void => {
             <div className="space-y-2 max-w-md mx-auto">
               <h3 className="text-xl font-bold text-white tracking-tight">Premium Article Locked</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                This high-quality engineering article is premium content. Unlock lifetime access to it for only <span className="text-amber-400 font-semibold">₹500</span>.
+                This high-quality engineering article is premium content. Unlock lifetime access to it for only <span className="text-amber-400 font-semibold">₹{blog.price || 0}</span>.
               </p>
             </div>
             <button
@@ -229,7 +229,7 @@ const downloadPDF = (): void => {
               className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 active:scale-[0.98] text-sm border border-amber-400/20 flex items-center justify-center gap-2 mx-auto"
             >
               <Lock size={16} />
-              Unlock Premium Content (₹500)
+              Unlock Premium Content (₹{blog.price || 0})
             </button>
           </div>
         ) : (

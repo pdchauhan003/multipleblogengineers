@@ -113,7 +113,7 @@ function BlogCard({ blog }: { blog: any }) {
                 className="w-full py-2 px-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-medium rounded-xl transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 active:scale-[0.98] text-center text-sm border border-amber-400/20 flex items-center justify-center gap-2"
               >
                 <Lock size={14} />
-                Pay ₹500 to Unlock
+                Pay ₹{blog.price || 0} to Unlock
               </button>
             ) : blog.paymentRequired ? (
               <div className="w-full py-2 px-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium rounded-xl text-center flex items-center justify-center gap-1.5">

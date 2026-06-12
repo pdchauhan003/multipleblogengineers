@@ -6,7 +6,7 @@ export const handlePayment=async(blogId:any, onSuccess?: () => void)=>{
     try {
         await loadScript();
         
-        const orderRes=await api.post('/payment/create-order',{amount:500})
+        const orderRes=await api.post('/payment/create-order',{blogId: blogId})
         const order=orderRes.data;
         await api.post('/payment/createpayment',{orderId:order.id,blogId:blogId})
         const option={

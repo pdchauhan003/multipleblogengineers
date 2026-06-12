@@ -11,6 +11,7 @@ interface Blog {
   status: 'draft' | 'published' | 'paid';
   paymentRequired?: boolean;
   hasPaid?: boolean;
+  price?: number;
   createdAt: string;
   authorId?: {
     name: string;
