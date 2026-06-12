@@ -8,7 +8,10 @@ interface Blog {
   excerpt: string;
   category: string;
   coverImage?: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'paid';
+  paymentRequired?: boolean;
+  hasPaid?: boolean;
+  price?: number;
   createdAt: string;
   authorId?: {
     name: string;

@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { userRouter } from './routes/authRoute.js';
 import { blogRouter } from './routes/blogRoute.js';
+import { paymentRouter } from './routes/paymentRoute.js';
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use(cookieParser());
 
 app.use('/api/auth', userRouter);
 app.use('/api/blog',blogRouter);
+app.use('/api/payment/',paymentRouter);
 
 export { app };

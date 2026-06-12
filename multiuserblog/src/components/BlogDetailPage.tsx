@@ -4,15 +4,36 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, User as UserIcon, Clock, Tag, AlertCircle } from 'lucide-react';
+import { ArrowLeft, User as UserIcon, Clock, Tag, AlertCircle, Lock, Download } from 'lucide-react';
 import { useAuth } from '@/context/authContext';
 import { useSlug } from '@/hooks/useSlug';
 import jsPDF from 'jspdf';
-import { Download } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { handlePayment } from '@/handler/handlePayment';
+
+interface Blog {
+  _id: string;
+  title: string;
+  slug: string;
+  htmlContent: string;
+  excerpt: string;
+  category: string;
+  coverImage?: string;
+  seoKeywords?: string;
+  status?: 'draft' | 'published' | 'paid';
+  paymentRequired?: boolean;
+  hasPaid?: boolean;
+  createdAt: string;
+  authorId?: {
+    name: string;
+    email: string;
+  };
+}
 
 export default function BlogDetailPage({ slug }: { slug: string }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -185,35 +206,67 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
           </div>
         </div>
 
-        {/* HTML content */}
-        <article
-          className="blog-content"
-          dangerouslySetInnerHTML={{ __html: blog.htmlContent }}
-        />
-
-        {/* SEO keywords / tags */}
-        {blog.seoKeywords && (
-          <div className="mt-10 pt-6 border-t border-white/10">
-            <p className="text-xs text-gray-600 font-medium uppercase tracking-widest mb-3">Tags</p>
-            <div className="flex flex-wrap gap-2">
-              {blog.seoKeywords.split(',').map((kw) => (
-                <span
-                  key={kw.trim()}
-                  className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-gray-400 text-xs"
-                >
-                  {kw.trim()}
-                </span>
-              ))}
+        {/* HTML content or Lock Screen */}
+        {blog.status === 'paid' && !blog.hasPaid ? (
+          <div className="mt-8 p-8 bg-white/5 border border-white/10 rounded-2xl text-center space-y-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-orange-500/5 pointer-events-none" />
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto shadow-inner">
+              <Lock className="text-amber-400 animate-pulse" size={28} />
             </div>
+            <div className="space-y-2 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-white tracking-tight">Premium Article Locked</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                This high-quality engineering article is premium content. Unlock lifetime access to it for only <span className="text-amber-400 font-semibold">₹{blog.price || 0}</span>.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                handlePayment(blog._id, () => {
+                  queryClient.invalidateQueries({ queryKey: ['blog', slug] });
+                  queryClient.invalidateQueries({ queryKey: ['blogs'] });
+                });
+              }}
+              className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 active:scale-[0.98] text-sm border border-amber-400/20 flex items-center justify-center gap-2 mx-auto"
+            >
+              <Lock size={16} />
+              Unlock Premium Content (₹{blog.price || 0})
+            </button>
           </div>
+        ) : (
+          <>
+            <article
+              className="blog-content"
+              dangerouslySetInnerHTML={{ __html: blog.htmlContent }}
+            />
+
+            {/* SEO keywords / tags */}
+            {blog.seoKeywords && (
+              <div className="mt-10 pt-6 border-t border-white/10">
+                <p className="text-xs text-gray-600 font-medium uppercase tracking-widest mb-3">Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {blog.seoKeywords.split(',').map((kw) => (
+                    <span
+                      key={kw.trim()}
+                      className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-gray-400 text-xs"
+                    >
+                      {kw.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="mt-8">
+              <button
+                onClick={downloadPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium"
+              >
+                <Download size={16} />
+                Download PDF
+              </button>
+            </div>
+          </>
         )}
-        <button
-          onClick={downloadPDF}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium"
-        >
-          <Download size={16} />
-          Download PDF
-        </button>
 
         {/* Footer back button */}
         <div className="mt-12 pt-8 border-t border-white/10 flex justify-center" onClick={() => router.back()}>
