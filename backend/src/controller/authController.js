@@ -310,11 +310,15 @@ export const resetPassword = async (req, res) => {
 export const selectRole = async (req, res) => {
     try {
         const { role } = req.body;
-        await User.findByIdAndUpdate(req.user._id, { role: role }, { new: true });
-        res.status(200).json({ success: true, message: 'update role succes' });
+        const ALLOWED_ROLES = ['visitor', 'creator'];
+        if (!ALLOWED_ROLES.includes(role)) {
+            return res.status(400).json({ success: false, message: 'Invalid role' });
+        }
+        await User.findByIdAndUpdate(req.user._id, { role }, { new: true });
+        res.status(200).json({ success: true, message: 'role updated successfully' });
     }
     catch (error) {
-        console.log('server side error in selection role')
-        res.status(500).json({ success: false, message: 'server side error in selection role' })
+        console.log('server side error in selection role');
+        res.status(500).json({ success: false, message: 'server side error in selection role' });
     }
 }
