@@ -70,7 +70,7 @@ export const sendMail = async (email) => {
         return {
             success: true,
             message: `OTP sent (${user.otpRequestCount}/5)`,
-            otp: otp,
+            // otp is intentionally NOT returned — it is saved to DB and sent by email only.
         };
 
     } catch (error) {
