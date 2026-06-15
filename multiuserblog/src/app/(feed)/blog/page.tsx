@@ -106,8 +106,9 @@ export default function Feed() {
     [searchFetchMore, searchHasMore, searchFetchingMore, setupObserver],
   );
 
-  // loafding
-  if (loading || !user) {
+  // Show spinner only while auth is being checked.
+  // Once loading is done: if no user → the useEffect will redirect to /login.
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
         <div className="relative w-16 h-16">
@@ -118,6 +119,9 @@ export default function Feed() {
       </div>
     );
   }
+
+  // Auth resolved but no user — redirect in progress (useEffect above handles it)
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">

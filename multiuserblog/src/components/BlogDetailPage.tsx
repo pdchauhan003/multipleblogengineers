@@ -54,7 +54,9 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
     : '';
 
   // ── Auth / session loading ───────────────────────────────────────────────────
-  if (authLoading || (!user && !authLoading)) {
+  // Only show the spinner while we are actively checking auth.
+  // When done: no user → the useEffect above redirects to /login.
+  if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
         <div className="relative w-16 h-16">
@@ -65,6 +67,10 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
       </div>
     );
   }
+
+  // Auth resolved with no user — redirect in progress, render nothing
+  if (!user) return null;
+
 
   const downloadPDF = (): void => {
     if (!blog) return;

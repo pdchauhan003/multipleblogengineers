@@ -56,6 +56,22 @@ export default function Dashboard() {
     return () => observer.disconnect();
   }, [hasNextPage,isFetchingNextPage,fetchNextPage,]);
 
+  // Show spinner while auth state is being resolved
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col justify-center items-center gap-4">
+        <div className="relative w-14 h-14">
+          <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20 animate-pulse" />
+          <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+        </div>
+        <p className="text-gray-400 text-sm animate-pulse">Verifying session...</p>
+      </div>
+    );
+  }
+
+  // Auth resolved but no user — redirect in progress
+  if (!user) return null;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex justify-center items-center">
@@ -63,6 +79,7 @@ export default function Dashboard() {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
