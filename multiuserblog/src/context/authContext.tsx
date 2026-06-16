@@ -2,10 +2,11 @@
 /* eslint-disable react-hooks/immutability */
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/api/axios';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import axios from 'axios';
 
 export interface User {
   _id: string;
@@ -43,19 +44,64 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [forgot, setForgot] = useState<boolean>(false);
   const router = useRouter();
 
+  // Prevent double-invocation in React StrictMode / concurrent renders
+  const checkUserInFlight = useRef(false);
+
   useEffect(() => {
     checkUser();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkUser = async () => {
+    // Avoid parallel calls — loading is already true from initial useState(true)
+    if (checkUserInFlight.current) return;
+    checkUserInFlight.current = true;
+
     try {
       setForgot(false);
-      const res = await api.get('/auth/me');
-      setUser(res.data.user);
-    } catch {
-      setUser(null);
+
+      // ── Step 1: Try /auth/me with current access token cookie
+      // Use _skipRefreshInterceptor so the axios interceptor doesn't auto-retry
+      // (we manage the full flow ourselves below)
+      try {
+        const res = await api.get('/auth/me', { _skipRefreshInterceptor: true } as any);
+        setUser(res.data.user);
+        return; // ✅ access token is valid — done
+      } catch (err: any) {
+        const isTimeout = err.code === 'ECONNABORTED' || err.code === 'ERR_NETWORK' || !err.response;
+        const is401 = axios.isAxiosError(err) && err.response?.status === 401;
+
+        if (!is401 && !isTimeout) {
+          // Some other HTTP error (5xx, CORS, etc.) — can't recover
+          setUser(null);
+          router.push('/login');
+          return;
+        }
+        // 401 = access token expired, OR timeout = Render cold-start
+        // In both cases → fall through and try the refresh token
+      }
+
+      // ── Step 2: Try to get a new access token using the refresh token cookie
+      try {
+        await api.post('/auth/refresh', {}, { withCredentials: true });
+      } catch {
+        // Refresh token is also expired / missing → must log in again
+        setUser(null);
+        router.push('/login');
+        return;
+      }
+
+      // ── Step 3: Refresh succeeded → retry /auth/me with the brand-new access token
+      try {
+        const res = await api.get('/auth/me', { _skipRefreshInterceptor: true } as any);
+        setUser(res.data.user);
+      } catch {
+        setUser(null);
+        router.push('/login');
+      }
     } finally {
       setLoading(false);
+      checkUserInFlight.current = false;
     }
   };
 

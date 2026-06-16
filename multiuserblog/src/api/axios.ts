@@ -9,9 +9,7 @@ const baseURL = isServer
 const api = axios.create({
   baseURL,
   withCredentials: true,
-  // headers: {
-  //   'Content-Type': 'application/json',
-  // },
+  timeout: 30000, // 30s — Render free tier can take 20-30s to cold-start
 });
 
 // Auth routes that should NOT go through the token-refresh interceptor.
@@ -37,6 +35,11 @@ api.interceptors.response.use(
 
     // Skip refresh logic for auth endpoints — pass original error straight through
     if (isAuthRoute(originalRequest?.url)) {
+      return Promise.reject(error);
+    }
+
+    // Skip if the caller explicitly manages refresh itself (e.g. checkUser in authContext)
+    if (originalRequest?._skipRefreshInterceptor) {
       return Promise.reject(error);
     }
 
