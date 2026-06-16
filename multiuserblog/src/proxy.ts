@@ -44,5 +44,6 @@ export const config = {
     '/profile/:path*',
     '/login',
     '/register',
+    '/otpforgot',
   ],
 };

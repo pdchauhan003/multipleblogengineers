@@ -48,24 +48,20 @@ export const sendMail = async (email) => {
        // console.log(`\n==========================================\n[OTP GENERATED] OTP for ${email} is: ${otp}\n==========================================\n`);
 
         //  Send Email
-        try {
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
-                },
-            });
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
 
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: "Your OTP Code",
-                text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
-            });
-        } catch (mailError) {
-            console.warn("Nodemailer failed to send email (probably credentials not set). Using printed OTP for dev fallback:", mailError.message);
-        }
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Your OTP Code",
+            text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
+        });
 
         return {
             success: true,

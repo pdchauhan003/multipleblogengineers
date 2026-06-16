@@ -43,30 +43,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [forgot, setForgot] = useState<boolean>(false);
   const router = useRouter();
-
-  // Prevent double-invocation in React StrictMode / concurrent renders
   const checkUserInFlight = useRef(false);
 
   useEffect(() => {
     checkUser();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkUser = async () => {
-    // Avoid parallel calls — loading is already true from initial useState(true)
+    // Avoid parallel calls
     if (checkUserInFlight.current) return;
     checkUserInFlight.current = true;
 
     try {
       setForgot(false);
-
-      // ── Step 1: Try /auth/me with current access token cookie
-      // Use _skipRefreshInterceptor so the axios interceptor doesn't auto-retry
-      // (we manage the full flow ourselves below)
       try {
         const res = await api.get('/auth/me', { _skipRefreshInterceptor: true } as any);
         setUser(res.data.user);
-        return; // ✅ access token is valid — done
+        return; // access token is valid 
       } catch (err: any) {
         const isTimeout = err.code === 'ECONNABORTED' || err.code === 'ERR_NETWORK' || !err.response;
         const is401 = axios.isAxiosError(err) && err.response?.status === 401;
@@ -77,11 +71,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           router.push('/login');
           return;
         }
-        // 401 = access token expired, OR timeout = Render cold-start
-        // In both cases → fall through and try the refresh token
       }
 
-      // ── Step 2: Try to get a new access token using the refresh token cookie
+      //  try to get a new access token using the refresh token cookie
       try {
         await api.post('/auth/refresh', {}, { withCredentials: true });
       } catch {
@@ -91,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // ── Step 3: Refresh succeeded → retry /auth/me with the brand-new access token
+      // ─ Refresh succeeded → retry /auth/me with the brand-new access token
       try {
         const res = await api.get('/auth/me', { _skipRefreshInterceptor: true } as any);
         setUser(res.data.user);
