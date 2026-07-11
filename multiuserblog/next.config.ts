@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // Falls back to Render URL so Vercel deployment works without any env var configuration
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const nextConfig: NextConfig = {
   images: {
@@ -21,6 +21,21 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         destination: `${BACKEND_URL}/api/:path*`,
+      },
+    ];
+  },
+
+  // Serve Digital Asset Links with the correct Content-Type header.
+  // Android's TWA / Digital Asset Links verification requires this.
+  async headers() {
+    return [
+      {
+        source: "/.well-known/assetlinks.json",
+        headers: [
+          { key: "Content-Type", value: "application/json" },
+          // Allow Android's verification system to access the file
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
       },
     ];
   },
